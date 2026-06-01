@@ -43,7 +43,111 @@
     <link rel="stylesheet" href="css/style.css">
     <title>GISEC - Girls in Software Engineering and Cybersecurity</title>
     <style>
-
+        /* Courses Section Styles */
+        .courses-section {
+            padding: 60px 0;
+            background: #f8f9fa;
+        }
+        .courses-section h2 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .course-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .course-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        .course-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 12px;
+        }
+        .course-header h3 {
+            font-size: 1.3rem;
+            margin: 0;
+            color: #1a1a2e;
+        }
+        .price {
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .duration {
+            color: #6b7280;
+            margin: 8px 0;
+            font-size: 0.9rem;
+        }
+        .tools {
+            margin: 12px 0;
+        }
+        .tools strong {
+            font-size: 0.85rem;
+        }
+        .tool-tag {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            margin: 4px 4px 0 0;
+        }
+        .weeks-preview {
+            margin: 16px 0;
+            font-size: 0.85rem;
+        }
+        .weeks-preview ul {
+            margin: 8px 0 0 20px;
+            color: #4b5563;
+        }
+        .weeks-preview li {
+            margin: 4px 0;
+        }
+        .btn-enroll-course {
+            width: 100%;
+            padding: 12px;
+            background: #1d3ede;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+        .btn-enroll-course:hover {
+            background: #0a2aad;
+        }
+        .loading-courses {
+            text-align: center;
+            padding: 60px;
+            font-size: 1.2rem;
+            color: #6b7280;
+        }
     </style>
 </head>
 <div>
@@ -57,6 +161,7 @@
                 <li class="nav-item"><a class="nav-link" href="#what-we-do">What We Do</a></li>
                 <li class="nav-item"><a class="nav-link" href="#objective">Objective</a></li>
                 <li class="nav-item"><a class="nav-link" href="#media">Media</a></li>
+                <li class="nav-item"><a class="nav-link" href="#courses">Courses</a></li>
                 <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
             </ul>
             <form class="form-inline my-2 my-lg-0">
@@ -413,7 +518,7 @@
                 <div class="oval mr-4"><img class="align-self-start" src="images/mentorship.png" alt=""></div>
                 <div class="media-body">
                     <h5 class="mb-0">Mentorship</h5>
-                   Mentors are the backbone of GISEC. By sharing your expertise, guidance, and encouragement, you can shape a girl’s journey from curiosity to confidence and competence in tech.
+                   Mentors are the backbone of GISEC. By sharing your expertise, guidance, and encouragement, you can shape a girl's journey from curiosity to confidence and competence in tech.
 
 
                 </div>
@@ -422,17 +527,21 @@
                 <div class="oval mr-4"><img class="align-self-start" src="images/opportunities.png" alt=""></div>
                 <div class="media-body">
                     <h5 class="mb-0"> Funding Opportunities</h5>
-                    We continuously seek local and international funding opportunities to support our mission. Whether through grants, donations, or CSR initiatives, your support fuels our impact and growth.
+                    We continuously seek local and international funding opportunities to support our mission. Whether through grants, donations, or CSR initiatives, your support fuels our impact and growth.
                 </div>
             </div>
-            <!-- <div class="media col-md-6 col-lg-4">
-                <div class="oval mr-4"><img class="align-self-start" src="images/effectively-increase.png" alt=""></div>
-                <div class="media-body">
-                    <h5 class="mb-0">Effectively Increase</h5>
-                    Aliquam a nisl pulvinar, hendrerit arcu sed, dapibus velit. Duis ac quam id sapien vestibulum
-                    fermentum ac eu eros. Aliquam erat volutpat.
-                </div>
-            </div> -->
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- OUR COURSES SECTION - ADDED ON HOMEPAGE      -->
+<!-- ============================================ -->
+<div class="container-fluid courses-section" id="courses">
+    <div class="container">
+        <h2>📚 Our Courses</h2>
+        <div class="courses-grid" id="coursesGrid">
+            <div class="loading-courses">Loading courses...</div>
         </div>
     </div>
 </div>
@@ -440,8 +549,6 @@
 <!-- Partners -->
 <div class="container-fluid gisec-logo-area">
     <div class="container">
-        <!-- <h2>Partners and partners</h2>
-        <p>We collaborate with global tech companies, educational <br />institutions, NGOs, and private sponsors committed to digital equity. <br />Join our growing ecosystem of impact.</p> -->
         <div class="row" style="    display: flex; align-items: center;">
                 <div class="col-md-5">
         <h2>Sponsors and Partners</h2>
@@ -527,7 +634,7 @@
                 <p> GISEC trainings empower students with in-demand tech skills through hands-on, real-world projects and expert mentorship. 
  </p>
                 <p>
-                    <small> Participants gain leadership abilities, global exposure, and certifications that boost career and scholarship opportunities. The program is designed to prepare students for success in both local and international tech ecosystems.
+                    <small> Participants gain leadership abilities, global exposure, and certifications that boost career and scholarship opportunities. The program is designed to prepare students for success in both local and international tech ecosystems.
                     </small>
                 </p>
                 <a href="https://bit.ly/gisecinterestform">Partner <i class="fa fa-angle-right" aria-hidden="true"></i></a></div>
@@ -560,9 +667,6 @@
 "><i class="fa fa-linkedin"
                                                                                  aria-hidden="true"></i></a></li>
                         </ul>
-                <!-- <input type="text" class="form-control" placeholder="Full Name">
-                <input type="email" class="form-control" placeholder="Email Address">
-                <textarea class="form-control" placeholder="Message"></textarea> -->
             </div>
             <div class="col-lg-3">
                 <div class="row">
@@ -573,29 +677,18 @@
                             <li class="nav-item"><a class="nav-link" style="color: #fff;" href="#what-we-do">What we do</a></li>
                             <li class="nav-item"><a class="nav-link" style="color: #fff;" href="#object">Objective</a></li>
                             <li class="nav-item"><a class="nav-link" style="color: #fff;" href="#media">Media</a></li>
+                            <li class="nav-item"><a class="nav-link" style="color: #fff;" href="#courses">Courses</a></li>
                             <li class="nav-item"><a class="nav-link" style="color: #fff;" href="#faq">FAQ's</a></li>
                             <li class="nav-item"><a class="nav-link" style="color: #fff;" href="#contact">Contact</a></li>
                         </ul>
                        
                     </div>
-                    <!-- <div class="col-6">
-                        <h4>Services</h4>
-                        <ul class="nav flex-column services-nav">
-                            <li class="nav-item"><a class="nav-link" href="#">Web Design</a></li>
-                            <li class="nav-item"><a class="nav-link" href="#">Graphics Design</a></li>
-                            <li class="nav-item"><a class="nav-link" href="#">App Design</a></li>
-                            <li class="nav-item"><a class="nav-link" href="#">SEO</a></li>
-                            <li class="nav-item"><a class="nav-link" href="#">Marketing</a></li>
-                            <li class="nav-item"><a class="nav-link" href="#">Analytic</a></li>
-                        </ul>
-                    </div>  -->
                 </div>
             </div>
         </div>
     </div>
 </footer>
 
-<!-- Optional JavaScript -->
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->
 <script src="js/jquery-3.3.1.slim.min.js"></script>
 <script src="js/popper.min.js"></script>
@@ -603,5 +696,132 @@
 <!-- owl carousel js-->
 <script src="owl-carousel/owl.carousel.min.js"></script>
 <script src="js/main.js"></script>
+
+<!-- JavaScript to load courses dynamically -->
+<script>
+// Course data directly embedded (so it works without external file)
+const coursesData = {
+  "courses": [
+    {
+      "id": 1,
+      "name": "Project Management",
+      "duration": "12 weeks",
+      "tools": ["Trello", "Jira", "Slack", "Asana"],
+      "price": "₦15,000",
+      "weeks": [
+        {"week": 1, "topic": "Introduction to Project Management"},
+        {"week": 2, "topic": "Scrum Framework"},
+        {"week": 3, "topic": "Tools & Documentation"},
+        {"week": 4, "topic": "Risk Management"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Product Management",
+      "duration": "12 weeks",
+      "tools": ["Miro", "Notion", "Amplitude"],
+      "price": "₦15,000",
+      "weeks": [
+        {"week": 1, "topic": "Product Lifecycle"},
+        {"week": 2, "topic": "Market Research"},
+        {"week": 3, "topic": "Product Strategy"},
+        {"week": 4, "topic": "Metrics & KPIs"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Product Design (UI/UX)",
+      "duration": "12 weeks",
+      "tools": ["Figma", "Miro", "Adobe XD"],
+      "price": "₦15,000",
+      "weeks": [
+        {"week": 1, "topic": "Design Principles"},
+        {"week": 2, "topic": "User Research & Flows"},
+        {"week": 3, "topic": "Wireframing in Figma"},
+        {"week": 4, "topic": "Prototyping & Testing"}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Data Analytics",
+      "duration": "12 weeks",
+      "tools": ["Python", "Pandas", "SQL", "PowerBI"],
+      "price": "₦20,000",
+      "weeks": [
+        {"week": 1, "topic": "Excel/Google Sheets"},
+        {"week": 2, "topic": "SQL Fundamentals"},
+        {"week": 3, "topic": "Python Basics"},
+        {"week": 4, "topic": "Pandas & NumPy"}
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Software Engineering",
+      "duration": "12 weeks",
+      "tools": ["JavaScript", "Python", "React", "Django", "Git"],
+      "price": "₦25,000",
+      "weeks": [
+        {"week": 1, "topic": "Git & Version Control"},
+        {"week": 2, "topic": "HTML & CSS"},
+        {"week": 3, "topic": "JavaScript Fundamentals"},
+        {"week": 4, "topic": "Python Basics"}
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Cybersecurity",
+      "duration": "12 weeks",
+      "tools": ["Wireshark", "Kali Linux", "Nmap"],
+      "price": "₦20,000",
+      "weeks": [
+        {"week": 1, "topic": "Networking Basics"},
+        {"week": 2, "topic": "Threat Landscape"},
+        {"week": 3, "topic": "Cryptography"},
+        {"week": 4, "topic": "Security Tools"}
+      ]
+    }
+  ]
+};
+
+function displayCourses() {
+    const grid = document.getElementById('coursesGrid');
+    if (!grid) return;
+    
+    const courses = coursesData.courses;
+    grid.innerHTML = courses.map(course => `
+        <div class="course-card">
+            <div class="course-header">
+                <h3>${course.name}</h3>
+                <span class="price">${course.price}</span>
+            </div>
+            <p class="duration">⏱️ ${course.duration}</p>
+            <div class="tools">
+                <strong>Tools:</strong>
+                ${course.tools.map(tool => `<span class="tool-tag">${tool}</span>`).join('')}
+            </div>
+            <div class="weeks-preview">
+                <strong>First 4 weeks:</strong>
+                <ul>
+                    ${course.weeks.slice(0, 4).map(week => `
+                        <li>Week ${week.week}: ${week.topic}</li>
+                    `).join('')}
+                </ul>
+            </div>
+            <button onclick="enrollInCourse(${course.id}, '${course.name}')" class="btn-enroll-course">
+                Enroll Now →
+            </button>
+        </div>
+    `).join('');
+}
+
+function enrollInCourse(courseId, courseName) {
+    localStorage.setItem('selectedCourse', JSON.stringify({ id: courseId, name: courseName }));
+    window.location.href = 'pages/signup.html';
+}
+
+// Display courses when page loads
+displayCourses();
+</script>
+
 </body>
 </html>
