@@ -303,6 +303,133 @@ export default function Home() {
       <div className="container-fluid gisec-testimonials" id="media" data-aos="fade-up">
         <div className="container">
           <h2>Media</h2>
+          <style>{`
+            .media-carousel-wrapper {
+              position: relative !important;
+              width: 100% !important;
+              margin: 30px auto !important;
+              padding: 0 40px !important;
+            }
+            .media-carousel-track {
+              display: flex !important;
+              flex-direction: row !important;
+              overflow-x: auto !important;
+              scroll-snap-type: x mandatory !important;
+              scroll-behavior: smooth !important;
+              -webkit-overflow-scrolling: touch !important;
+              gap: 20px !important;
+              padding: 20px 0 !important;
+            }
+            .media-carousel-track::-webkit-scrollbar {
+              display: none !important;
+            }
+            .media-carousel-track {
+              -ms-overflow-style: none !important;
+              scrollbar-width: none !important;
+            }
+            .media-carousel-item {
+              flex: 0 0 100% !important;
+              scroll-snap-align: start !important;
+              transition: transform 0.3s ease !important;
+            }
+            @media (min-width: 768px) {
+              .media-carousel-item {
+                flex: 0 0 calc(50% - 10px) !important;
+              }
+            }
+            @media (min-width: 992px) {
+              .media-carousel-item {
+                flex: 0 0 calc(33.333% - 13.33px) !important;
+              }
+            }
+            .media-carousel-item .card {
+              background: #fff !important;
+              box-shadow: 0 10px 30px rgba(29, 62, 222, 0.06) !important;
+              padding: 15px !important;
+              border-radius: 24px !important;
+              border: 1px solid rgba(29, 62, 222, 0.04) !important;
+              height: auto !important;
+              display: flex !important;
+              flex-direction: column !important;
+              justify-content: center !important;
+              align-items: center !important;
+            }
+            .media-carousel-item .shortVid {
+              width: 100% !important;
+              height: 250px !important;
+              display: flex !important;
+              justify-content: center !important;
+              align-items: center !important;
+              margin: 0 !important;
+            }
+            .media-carousel-item .iframeVid {
+              width: 100% !important;
+              height: 100% !important;
+              max-width: 100% !important;
+              border-radius: 1rem !important;
+              border: none !important;
+              box-shadow: none !important;
+            }
+            .media-carousel-btn {
+              position: absolute !important;
+              top: 50% !important;
+              transform: translateY(-50%) !important;
+              background: #fff !important;
+              border: 2px solid #1d3ede !important;
+              color: #1d3ede !important;
+              width: 45px !important;
+              height: 45px !important;
+              border-radius: 50% !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              cursor: pointer !important;
+              z-index: 10 !important;
+              transition: all 0.3s ease !important;
+              box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+              padding: 0 !important;
+            }
+            .media-carousel-btn:hover {
+              background: #1d3ede !important;
+              color: #fff !important;
+              box-shadow: 0 6px 20px rgba(29, 62, 222, 0.3) !important;
+            }
+            .media-carousel-btn.prev {
+              left: -10px !important;
+            }
+            .media-carousel-btn.next {
+              right: -10px !important;
+            }
+            @media (max-width: 576px) {
+              .media-carousel-wrapper {
+                padding: 0 10px !important;
+              }
+              .media-carousel-btn {
+                display: none !important;
+              }
+            }
+            .media-carousel-dots {
+              display: flex !important;
+              justify-content: center !important;
+              gap: 8px !important;
+              margin-top: 20px !important;
+            }
+            .media-carousel-dot {
+              width: 10px !important;
+              height: 10px !important;
+              border-radius: 50% !important;
+              border: 2px solid #01e6f8 !important;
+              background: transparent !important;
+              cursor: pointer !important;
+              padding: 0 !important;
+              transition: all 0.3s ease !important;
+            }
+            .media-carousel-dot.active {
+              background: #01e6f8 !important;
+              width: 12px !important;
+              height: 12px !important;
+            }
+          `}</style>
           <div 
             className="media-carousel-wrapper"
             onMouseEnter={() => setIsHovered(true)}
