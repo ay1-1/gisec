@@ -1,0 +1,202 @@
+{
+  "courses": [
+    {
+      "id": 1,
+      "name": "Project Management",
+      "duration": "12 weeks",
+      "tools": ["Trello", "Jira", "Slack", "Asana"],
+      "price": "₦15,000",
+      "weeks": [
+        {
+          "week": 1,
+          "topic": "Introduction to Project Management",
+          "content": "Waterfall vs. Agile, Project lifecycle",
+          "assignment": "Create a Trello board"
+        },
+        {
+          "week": 2,
+          "topic": "Scrum Framework",
+          "content": "Sprints, Stand-ups, Retrospectives",
+          "assignment": "Run a mock daily standup"
+        },
+        {
+          "week": 3,
+          "topic": "Tools & Documentation",
+          "content": "Using Jira for tracking, writing PRDs",
+          "assignment": "Create a project plan in Jira"
+        },
+        {
+          "week": 4,
+          "topic": "Risk Management",
+          "content": "Identifying and mitigating risks",
+          "assignment": "Risk assessment matrix"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Product Management",
+      "duration": "12 weeks",
+      "tools": ["Miro", "Notion", "Amplitude"],
+      "price": "₦15,000",
+      "weeks": [
+        {
+          "week": 1,
+          "topic": "Product Lifecycle",
+          "content": "Idea to launch to growth",
+          "assignment": "Product idea canvas"
+        },
+        {
+          "week": 2,
+          "topic": "Market Research",
+          "content": "Customer discovery, competitor analysis",
+          "assignment": "Competitor analysis report"
+        },
+        {
+          "week": 3,
+          "topic": "Product Strategy",
+          "content": "Roadmapping, prioritization",
+          "assignment": "Create a 6-month product roadmap"
+        },
+        {
+          "week": 4,
+          "topic": "Metrics & KPIs",
+          "content": "DAU, MAU, Churn, Retention",
+          "assignment": "Calculate KPIs for a sample product"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Product Design (UI/UX)",
+      "duration": "12 weeks",
+      "tools": ["Figma", "Miro", "Adobe XD"],
+      "price": "₦15,000",
+      "weeks": [
+        {
+          "week": 1,
+          "topic": "Design Principles",
+          "content": "Gestalt principles, typography, color theory",
+          "assignment": "Redesign a login screen"
+        },
+        {
+          "week": 2,
+          "topic": "User Research & Flows",
+          "content": "User personas, journey mapping",
+          "assignment": "Create user flow for an e-commerce app"
+        },
+        {
+          "week": 3,
+          "topic": "Wireframing in Figma",
+          "content": "Low-fidelity to high-fidelity",
+          "assignment": "Build a wireframe for a mobile app"
+        },
+        {
+          "week": 4,
+          "topic": "Prototyping & Testing",
+          "content": "Interactive prototypes, usability testing",
+          "assignment": "Figma prototype with user testing notes"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Data Analytics",
+      "duration": "12 weeks",
+      "tools": ["Python", "Pandas", "SQL", "PowerBI"],
+      "price": "₦20,000",
+      "weeks": [
+        {
+          "week": 1,
+          "topic": "Excel/Google Sheets",
+          "content": "Data cleaning, pivot tables, formulas",
+          "assignment": "Clean a dirty dataset in Excel"
+        },
+        {
+          "week": 2,
+          "topic": "SQL Fundamentals",
+          "content": "SELECT, WHERE, JOIN, GROUP BY",
+          "assignment": "Write 5 SQL queries on sample data"
+        },
+        {
+          "week": 3,
+          "topic": "Python Basics",
+          "content": "Variables, loops, functions, lists",
+          "assignment": "Python data manipulation script"
+        },
+        {
+          "week": 4,
+          "topic": "Pandas & NumPy",
+          "content": "DataFrames, series, array operations",
+          "assignment": "Analyze a CSV with Pandas"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Software Engineering",
+      "duration": "12 weeks",
+      "tools": ["JavaScript", "Python", "React", "Django", "Git"],
+      "price": "₦25,000",
+      "weeks": [
+        {
+          "week": 1,
+          "topic": "Git & Version Control",
+          "content": "Git init, add, commit, push, branches",
+          "assignment": "Create GitHub repo, make 3 commits"
+        },
+        {
+          "week": 2,
+          "topic": "HTML & CSS",
+          "content": "Semantic HTML, Flexbox, Grid",
+          "assignment": "Build a responsive portfolio page"
+        },
+        {
+          "week": 3,
+          "topic": "JavaScript Fundamentals",
+          "content": "Variables, functions, arrays, objects, DOM",
+          "assignment": "Build an interactive to-do app"
+        },
+        {
+          "week": 4,
+          "topic": "Python Basics",
+          "content": "Syntax, data types, OOP",
+          "assignment": "Build a student management system"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Cybersecurity",
+      "duration": "12 weeks",
+      "tools": ["Wireshark", "Kali Linux", "Nmap"],
+      "price": "₦20,000",
+      "weeks": [
+        {
+          "week": 1,
+          "topic": "Networking Basics",
+          "content": "OSI model, TCP/IP, DNS, HTTP/HTTPS",
+          "assignment": "Capture and analyze packets with Wireshark"
+        },
+        {
+          "week": 2,
+          "topic": "Threat Landscape",
+          "content": "Malware types, phishing, social engineering",
+          "assignment": "Identify phishing email examples"
+        },
+        {
+          "week": 3,
+          "topic": "Cryptography",
+          "content": "Hashing, encryption, SSL/TLS",
+          "assignment": "Encrypt/decrypt a message using Python"
+        },
+        {
+          "week": 4,
+          "topic": "Security Tools",
+          "content": "Nmap for scanning, Wireshark for analysis",
+          "assignment": "Run a basic network scan"
+        }
+      ]
+    }
+  ]
+}
