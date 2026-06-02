@@ -56,7 +56,7 @@
         <div id="my-nav" class="collapse navbar-collapse">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="pages/courses.html">Courses</a></li>
+                <li class="nav-item"><a class="nav-link" href="legacy-pages/courses.html">Courses</a></li>
                 <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
             </ul>
             <form class="form-inline my-2 my-lg-0">
@@ -598,7 +598,7 @@ function loadCourses() {
 
 function enrollInCourse(courseId, courseName) {
     localStorage.setItem('selectedCourse', JSON.stringify({ id: courseId, name: courseName }));
-    window.location.href = 'pages/signup.html';
+    window.location.href = 'legacy-pages/signup.html';
 }
 
 loadCourses();

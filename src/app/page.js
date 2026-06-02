@@ -23,6 +23,32 @@ const mediaVideos = [
 export default function Home() {
   const scrollRef = React.useRef(null);
   const [activeMediaIndex, setActiveMediaIndex] = React.useState(0);
+  const [isHovered, setIsHovered] = React.useState(false);
+
+  React.useEffect(() => {
+    if (isHovered) return;
+
+    const interval = setInterval(() => {
+      const container = scrollRef.current;
+      if (container) {
+        const childWidth = container.firstElementChild ? container.firstElementChild.clientWidth : 0;
+        if (childWidth > 0) {
+          const totalItems = mediaVideos.length;
+          let nextIndex = activeMediaIndex + 1;
+          if (nextIndex >= totalItems) {
+            nextIndex = 0;
+          }
+          container.scrollTo({
+            left: nextIndex * (childWidth + 20),
+            behavior: 'smooth'
+          });
+          setActiveMediaIndex(nextIndex);
+        }
+      }
+    }, 4000); // Autoplay auto-scrolls every 4 seconds
+
+    return () => clearInterval(interval);
+  }, [activeMediaIndex, isHovered]);
 
   const handleMediaScroll = () => {
     const container = scrollRef.current;
@@ -277,7 +303,13 @@ export default function Home() {
       <div className="container-fluid gisec-testimonials" id="media" data-aos="fade-up">
         <div className="container">
           <h2>Media</h2>
-          <div className="media-carousel-wrapper">
+          <div 
+            className="media-carousel-wrapper"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            onTouchStart={() => setIsHovered(true)}
+            onTouchEnd={() => setIsHovered(false)}
+          >
             <button className="media-carousel-btn prev" onClick={() => scrollMedia('left')} aria-label="Previous Video">
               <i className="fa fa-angle-left" aria-hidden="true" style={{ fontSize: '24px' }}></i>
             </button>
