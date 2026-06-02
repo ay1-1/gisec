@@ -12,7 +12,52 @@ const courses = [
   { id: 6, name: "Cybersecurity", duration: "12 weeks", price: "₦20,000", tools: ["Wireshark", "Kali Linux", "Nmap"], weeks: ["Networking", "Threat Landscape", "Cryptography", "Security Tools"] }
 ];
 
+const mediaVideos = [
+  "eNOLvfLhzeY",
+  "wv9Up_fVafc",
+  "72HbChSzhho",
+  "EiBdwJNznEM",
+  "8gok1_q04eU"
+];
+
 export default function Home() {
+  const scrollRef = React.useRef(null);
+  const [activeMediaIndex, setActiveMediaIndex] = React.useState(0);
+
+  const handleMediaScroll = () => {
+    const container = scrollRef.current;
+    if (container) {
+      const scrollLeft = container.scrollLeft;
+      const childWidth = container.firstElementChild ? container.firstElementChild.clientWidth : 0;
+      if (childWidth > 0) {
+        const index = Math.round(scrollLeft / (childWidth + 20)); // account for gap
+        setActiveMediaIndex(index);
+      }
+    }
+  };
+
+  const scrollToMediaIndex = (index) => {
+    const container = scrollRef.current;
+    if (container) {
+      const childWidth = container.firstElementChild ? container.firstElementChild.clientWidth : 0;
+      container.scrollTo({
+        left: index * (childWidth + 20),
+        behavior: 'smooth'
+      });
+      setActiveMediaIndex(index);
+    }
+  };
+
+  const scrollMedia = (direction) => {
+    const container = scrollRef.current;
+    if (container) {
+      const childWidth = container.firstElementChild ? container.firstElementChild.clientWidth : 0;
+      const scrollAmount = direction === 'left' ? -(childWidth + 20) : (childWidth + 20);
+      container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+
   const enrollInCourse = (courseId, courseName) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('selectedCourse', JSON.stringify({ id: courseId, name: courseName }));
@@ -35,10 +80,7 @@ export default function Home() {
           <div id="my-nav" className="collapse navbar-collapse">
             <ul className="navbar-nav mr-auto">
               <li className="nav-item"><Link className="nav-link" href="/">Home</Link></li>
-              <li className="nav-item"><a className="nav-link" href="#what-we-do">What We Do</a></li>
-              <li className="nav-item"><a className="nav-link" href="#objective">Objective</a></li>
-              <li className="nav-item"><a className="nav-link" href="#media">Media</a></li>
-              <li className="nav-item"><a className="nav-link" href="#courses">Courses</a></li>
+              <li className="nav-item"><Link className="nav-link" href="/courses">Courses</Link></li>
               <li className="nav-item"><a className="nav-link" href="#contact">Contact</a></li>
             </ul>
             <div className="form-inline my-2 my-lg-0">
@@ -235,12 +277,49 @@ export default function Home() {
       <div className="container-fluid gisec-testimonials" id="media" data-aos="fade-up">
         <div className="container">
           <h2>Media</h2>
-          <div className="owl-carousel owl-carousel1 owl-theme">
-            <div><div className="card text-center"><div className="card-body shortVid"><iframe style={{ borderRadius: '1rem' }} className="iframeVid" src="https://www.youtube.com/embed/eNOLvfLhzeY" title="Gisec Start 2025" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe></div></div></div>
-            <div><div className="card text-center"><div className="card-body shortVid"><iframe style={{ borderRadius: '1rem' }} className="iframeVid" src="https://www.youtube.com/embed/wv9Up_fVafc" title="Gisec Start 2025" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe></div></div></div>
-            <div><div className="card text-center"><div className="card-body shortVid"><iframe style={{ borderRadius: '1rem' }} className="iframeVid" src="https://www.youtube.com/embed/72HbChSzhho" title="Gisec Start 2025" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe></div></div></div>
-            <div><div className="card text-center"><div className="card-body shortVid"><iframe style={{ borderRadius: '1rem' }} className="iframeVid" src="https://www.youtube.com/embed/EiBdwJNznEM" title="Gisec Start 2025" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe></div></div></div>
-            <div><div className="card text-center"><div className="card-body shortVid"><iframe style={{ borderRadius: '1rem' }} className="iframeVid" src="https://www.youtube.com/embed/8gok1_q04eU" title="Gisec Start 2025" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe></div></div></div>
+          <div className="media-carousel-wrapper">
+            <button className="media-carousel-btn prev" onClick={() => scrollMedia('left')} aria-label="Previous Video">
+              <i className="fa fa-angle-left" aria-hidden="true" style={{ fontSize: '24px' }}></i>
+            </button>
+            
+            <div 
+              className="media-carousel-track" 
+              ref={scrollRef} 
+              onScroll={handleMediaScroll}
+            >
+              {mediaVideos.map((vidId, index) => (
+                <div key={vidId} className="media-carousel-item">
+                  <div className="card text-center">
+                    <div className="card-body shortVid">
+                      <iframe 
+                        className="iframeVid" 
+                        src={`https://www.youtube.com/embed/${vidId}`} 
+                        title={`Gisec Media Video ${index + 1}`} 
+                        frameBorder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        referrerPolicy="strict-origin-when-cross-origin" 
+                        allowFullScreen
+                      ></iframe>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button className="media-carousel-btn next" onClick={() => scrollMedia('right')} aria-label="Next Video">
+              <i className="fa fa-angle-right" aria-hidden="true" style={{ fontSize: '24px' }}></i>
+            </button>
+          </div>
+
+          <div className="media-carousel-dots">
+            {mediaVideos.map((_, index) => (
+              <button
+                key={index}
+                className={`media-carousel-dot ${activeMediaIndex === index ? 'active' : ''}`}
+                onClick={() => scrollToMediaIndex(index)}
+                aria-label={`Go to slide ${index + 1}`}
+              ></button>
+            ))}
           </div>
         </div>
       </div>
@@ -288,44 +367,17 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Courses */}
-      <div className="container-fluid" style={{ padding: '70px 0', background: '#f8fafc' }} id="courses" data-aos="fade-up">
-        <div className="container">
-          <div className="text-center mb-5">
-            <h2 style={{ color: '#1a1a2e', fontWeight: 700, fontSize: '2.2rem' }}>📚 Our Courses</h2>
-            <p style={{ color: '#6c757d', fontSize: '1rem', maxWidth: '600px', margin: '15px auto 0' }}>Choose your path and start your journey in tech today</p>
-          </div>
-          <div className="row" id="coursesRow">
-            {courses.map((course, i) => (
-              <div key={course.id} className="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay={(i % 3) * 150}>
-                <div className="course-card">
-                  <div className="course-header">
-                    <h3>{course.name}</h3>
-                    <div className="course-price">{course.price}</div>
-                  </div>
-                  <div className="course-body">
-                    <div className="course-duration">⏱️ {course.duration}</div>
-                    <div className="course-tools">
-                      <strong>🛠️ Tools You&apos;ll Learn</strong>
-                      <div>
-                        {course.tools.map((tool, idx) => (
-                          <span key={idx} className="tool-badge">{tool}</span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="course-weeks">
-                      <strong>📖 First 4 Weeks</strong>
-                      <ul>
-                        {course.weeks.map((week, idx) => (
-                          <li key={idx}>{week}</li>
-                        ))}
-                      </ul>
-                    </div>
-                    <button className="btn-gisek-enroll" onClick={() => enrollInCourse(course.id, course.name)}>Enroll Now →</button>
-                  </div>
-                </div>
-              </div>
-            ))}
+      {/* Courses CTA Section */}
+      <div className="container-fluid" style={{ padding: '80px 0', background: '#f8fafc' }} id="courses" data-aos="fade-up">
+        <div className="container text-center">
+          <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+            <h2 style={{ color: '#1a1a2e', fontWeight: 700, fontSize: '2.5rem', marginBottom: '20px' }}>🚀 Start Your Tech Journey</h2>
+            <p style={{ color: '#6c757d', fontSize: '1.1rem', lineHeight: '1.8', marginBottom: '35px' }}>
+              Empower yourself with high-demand professional training in Software Engineering, Cybersecurity, UI/UX Product Design, Data Analytics, and Project Management. Join our next cohort and learn from industry experts.
+            </p>
+            <Link href="/courses" className="btn btn-outline-dark text-uppercase" style={{ color: '#1d3ede', border: '3px solid #1d3ede', padding: '12px 35px', borderRadius: '30px', fontWeight: 600, fontSize: '1rem', transition: 'all 0.3s ease' }}>
+              Explore Our Courses <i className="fa fa-angle-right" style={{ marginLeft: '10px' }} aria-hidden="true"></i>
+            </Link>
           </div>
         </div>
       </div>
