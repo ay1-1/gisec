@@ -10,6 +10,7 @@
       "students": 45,
       "rating": 4.7,
       "featured": false,
+      "image": "/images/courses/pm.png",
       "description": "Learn to plan, execute, and deliver projects on time using industry-standard Agile and Waterfall methodologies. This course transforms you from a beginner into a confident project manager capable of leading cross-functional teams.",
       "whatYouLearn": [
         "Plan and manage projects using Agile & Waterfall methodologies",
@@ -35,6 +36,7 @@
       "students": 38,
       "rating": 4.8,
       "featured": false,
+      "image": "/images/courses/product.png",
       "description": "Master the art of building products users love. From ideation to launch, learn customer discovery, competitive analysis, roadmapping, and how to measure product success with data-driven KPIs.",
       "whatYouLearn": [
         "Understand the full product lifecycle from idea to growth",
@@ -60,6 +62,7 @@
       "students": 52,
       "rating": 4.9,
       "featured": true,
+      "image": "/images/courses/design.png",
       "description": "Design beautiful, user-centered digital products from scratch. Learn design thinking, user research, wireframing, and prototyping using Figma — the industry's most in-demand design tool.",
       "whatYouLearn": [
         "Apply Gestalt principles, typography, and color theory in design",
@@ -85,6 +88,7 @@
       "students": 41,
       "rating": 4.6,
       "featured": false,
+      "image": "/images/courses/data.png",
       "description": "Turn raw data into powerful insights. Learn to clean, analyze, and visualize data using Excel, SQL, Python, and Power BI — the essential toolkit for any data-driven career.",
       "whatYouLearn": [
         "Clean and transform messy datasets using Excel and Python",
@@ -110,6 +114,7 @@
       "students": 67,
       "rating": 4.9,
       "featured": true,
+      "image": "/images/courses/software.png",
       "description": "Become a full-stack developer. Master HTML, CSS, JavaScript, React for frontend, and Python with Django for backend. You'll build real-world projects, learn Git version control, and deploy applications.",
       "whatYouLearn": [
         "Use Git and GitHub for professional version control and collaboration",
@@ -135,6 +140,7 @@
       "students": 33,
       "rating": 4.7,
       "featured": true,
+      "image": "/images/courses/cyber.png",
       "description": "Protect systems, networks, and data from cyber threats. Learn networking fundamentals, ethical hacking tools, cryptography, and security best practices used by professionals worldwide.",
       "whatYouLearn": [
         "Understand the OSI model, TCP/IP, DNS, and HTTP/HTTPS protocols",

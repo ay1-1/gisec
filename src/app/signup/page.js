@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import coursesData from '@/public/data/courses.json';
+import { Clock, CreditCard, CheckCircle, ArrowLeft } from 'lucide-react';
 
 export default function Signup() {
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -146,14 +147,23 @@ export default function Signup() {
         
         <div className="selected-course">
           {courseDetails ? (
-            <div>
-              <strong>✅ Selected Course:</strong> {courseDetails.name}<br />
-              <strong>💰 Price:</strong> {courseDetails.price}<br />
-              <strong>⏱️ Duration:</strong> {courseDetails.duration}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CheckCircle size={16} style={{ color: '#10b981' }} />
+                <span><strong>Selected Course:</strong> {courseDetails.name}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CreditCard size={16} style={{ color: '#6366f1' }} />
+                <span><strong>Price:</strong> {courseDetails.price}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Clock size={16} style={{ color: '#f59e0b' }} />
+                <span><strong>Duration:</strong> {courseDetails.duration}</span>
+              </div>
             </div>
           ) : (
-            <p style={{ color: 'red' }}>
-              No course selected. <Link href="/courses">Go back to courses</Link>
+            <p style={{ color: 'red', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              No course selected. <Link href="/courses" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><ArrowLeft size={14} /> Go back to courses</Link>
             </p>
           )}
         </div>
@@ -188,7 +198,7 @@ export default function Signup() {
           </div>
           
           <div className="payment-details">
-            <h3>💰 Payment Instructions</h3>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '1.15rem', color: '#b45309' }}><CreditCard size={20} /> Payment Instructions</h3>
             <p style={{ margin: '8px 0' }}>Bank Transfer to:</p>
             <p><strong>Bank:</strong> GTBank<br />
             <strong>Account Name:</strong> GISEK Technologies<br />
@@ -209,7 +219,7 @@ export default function Signup() {
           <button type="submit" className="btn-submit">Complete Registration</button>
         </form>
         
-        <Link href="/courses" className="back-link">← Back to Courses</Link>
+        <Link href="/courses" className="back-link" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><ArrowLeft size={16} /> Back to Courses</Link>
       </div>
     </>
   );

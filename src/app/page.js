@@ -2,17 +2,21 @@
 
 import React from 'react';
 import Link from 'next/link';
-
-const courses = [
-  { id: 1, name: "Project Management", duration: "12 weeks", price: "₦15,000", tools: ["Trello", "Jira", "Slack", "Asana"], weeks: ["Intro to Project Management", "Scrum Framework", "Tools & Documentation", "Risk Management"] },
-  { id: 2, name: "Product Management", duration: "12 weeks", price: "₦15,000", tools: ["Miro", "Notion", "Amplitude"], weeks: ["Product Lifecycle", "Market Research", "Product Strategy", "Metrics & KPIs"] },
-  { id: 3, name: "Product Design (UI/UX)", duration: "12 weeks", price: "₦15,000", tools: ["Figma", "Miro", "Adobe XD"], weeks: ["Design Principles", "User Research", "Wireframing", "Prototyping"] },
-  { id: 4, name: "Data Analytics", duration: "12 weeks", price: "₦20,000", tools: ["Python", "Pandas", "SQL", "PowerBI"], weeks: ["Excel/Sheets", "SQL", "Python Basics", "Pandas"] },
-  { id: 5, name: "Software Engineering", duration: "12 weeks", price: "₦25,000", tools: ["JavaScript", "Python", "React", "Django", "Git"], weeks: ["Git/GitHub", "HTML/CSS", "JavaScript", "Python"] },
-  { id: 6, name: "Cybersecurity", duration: "12 weeks", price: "₦20,000", tools: ["Wireshark", "Kali Linux", "Nmap"], weeks: ["Networking", "Threat Landscape", "Cryptography", "Security Tools"] }
-];
-
-const mediaVideos = [
+import coursesData from '@/public/data/courses.json';
+import { 
+  Clock, 
+  Star, 
+  Sparkles, 
+  ChevronRight, 
+  ChevronLeft, 
+  Globe, 
+  Instagram, 
+  Mail, 
+  Linkedin,
+  ArrowRight,
+  Rocket,
+  BookOpen
+} from 'lucide-react';
   "eNOLvfLhzeY",
   "wv9Up_fVafc",
   "72HbChSzhho",
@@ -123,7 +127,7 @@ export default function Home() {
             <div className="col-md-6" data-aos="fade-right">
               <h1 style={{ fontWeight: 600 }}> We are not just teaching tech—we&apos;re <span>REWRITING </span> futures. </h1>
               <p>GISEC combines tech skills with mentorship, leadership development, and real-world problem-solving to produce industry-ready female tech leaders.</p>
-              <a href="#contact">Contact Us <i className="fa fa-angle-right" aria-hidden="true"></i></a>
+              <a href="#contact" style={{ display: 'inline-flex', alignItems: 'center' }}>Contact Us <ChevronRight size={16} style={{ marginLeft: '4px' }} /></a>
             </div>
             <div className="col-md-6 shortVid" data-aos="fade-left">
               <iframe style={{ borderRadius: '1rem' }} className="iframeVid" src="https://www.youtube.com/embed/72HbChSzhho" title="Gisec Start 2025" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
@@ -161,7 +165,7 @@ export default function Home() {
               <h2> We build a movement of creative problem-solvers, innovative thinkers, and future tech leaders</h2>
               <p> We offer a comprehensive, hands-on tech training program that blends theoretical foundations with real-world applications in Software Engineering and Cybersecurity.</p>
               <p><small> Through mentorship, projects, and exposure, GISEC transforms curious minds into capable developers and security professionals.</small></p>
-              <a href="https://bit.ly/gisecvolunteers">Volunteer <i className="fa fa-angle-right" aria-hidden="true"></i></a>
+              <a href="https://bit.ly/gisecvolunteers" style={{ display: 'inline-flex', alignItems: 'center' }}>Volunteer <ChevronRight size={16} style={{ marginLeft: '4px' }} /></a>
             </div>
           </div>
         </div>
@@ -180,9 +184,11 @@ export default function Home() {
               fontSize: '0.85rem',
               textTransform: 'uppercase',
               letterSpacing: '1px',
-              display: 'inline-block',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
               marginBottom: '15px'
-            }}>⭐ Popular Programs</span>
+            }}><Sparkles size={14} fill="#1d3ede" /> Popular Programs</span>
             <h2 style={{ fontFamily: 'Lato-Bold', color: '#1a1a2e', fontSize: '2.5rem', fontWeight: 700 }}>Featured Courses</h2>
             <p style={{ color: '#6b7280', fontSize: '1.05rem', maxWidth: '550px', margin: '10px auto 0' }}>
               Explore our most popular learning paths — designed to launch your global tech career.
@@ -190,88 +196,118 @@ export default function Home() {
           </div>
 
           <div className="row" style={{ gap: '0' }}>
-            {courses.slice(0, 3).map((course, idx) => (
+            {coursesData.courses.filter(c => c.featured).map((course, idx) => (
               <div className="col-lg-4 col-md-6" key={course.id} data-aos="fade-up" data-aos-delay={idx * 100} style={{ marginBottom: '30px' }}>
                 <div style={{
                   background: '#ffffff',
                   borderRadius: '20px',
-                  padding: '30px',
                   boxShadow: '0 10px 30px rgba(29, 62, 222, 0.06)',
                   border: '1px solid rgba(29, 62, 222, 0.06)',
-                  position: 'relative',
                   overflow: 'hidden',
                   height: '100%',
                   display: 'flex',
                   flexDirection: 'column',
-                  justifyContent: 'space-between',
                   transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)'
-                }}>
-                  <div style={{
-                    position: 'absolute', top: 0, left: 0, width: '100%', height: '4px',
-                    background: 'linear-gradient(90deg, #1d3ede, #01e6f8)'
-                  }}></div>
+                }} className="cp-card">
+                  
+                  {/* Card Cover Image */}
+                  <div style={{ height: '160px', background: '#e2e8f0', overflow: 'hidden', position: 'relative' }}>
+                    <img 
+                      src={course.image || '/images/courses/pm.png'} 
+                      alt={course.name} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }} 
+                    />
+                    <div style={{
+                      position: 'absolute', top: 12, right: 12,
+                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      color: 'white', padding: '3px 10px', borderRadius: '20px',
+                      fontSize: '0.7rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px'
+                    }}>
+                      <Star size={11} fill="#ffffff" color="#ffffff" />
+                      <span>Featured</span>
+                    </div>
+                  </div>
 
-                  <div>
+                  <div style={{ padding: '25px', display: 'flex', flexDirection: 'column', flex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                       <span style={{
                         background: '#ecfdf5', color: '#047857',
                         padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600
                       }}>{course.price}</span>
-                      <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>⏱️ {course.duration}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem', color: '#6b7280' }}>
+                        <Clock size={13} style={{ color: '#1d3ede' }} />
+                        <span>{course.duration}</span>
+                      </div>
                     </div>
 
-                    <h3 style={{ fontFamily: 'Lato-Bold', fontSize: '1.5rem', color: '#1a1a2e', marginBottom: '12px' }}>{course.name}</h3>
+                    <Link href={`/courses/${course.id}`} style={{ textDecoration: 'none' }}>
+                      <h3 style={{ fontFamily: 'Lato-Bold', fontSize: '1.35rem', color: '#1a1a2e', marginBottom: '12px', fontWeight: 700 }}>
+                        {course.name}
+                      </h3>
+                    </Link>
+
+                    {/* Ratings */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '15px' }}>
+                      <Star size={13} fill="#f59e0b" color="#f59e0b" />
+                      <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 700 }}>{course.rating || '4.5'}</span>
+                      <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>({course.students || 40}+ enrolled)</span>
+                    </div>
 
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '20px' }}>
-                      {course.tools.map((tool, toolIdx) => (
+                      {course.tools.slice(0, 3).map((tool, toolIdx) => (
                         <span key={toolIdx} style={{
                           background: '#f1f5f9', color: '#475569',
                           padding: '4px 10px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 500,
                           border: '1px solid rgba(0,0,0,0.03)'
                         }}>{tool}</span>
                       ))}
-                    </div>
-
-                    <div style={{
-                      background: '#f8fafc', borderRadius: '12px', padding: '15px', marginBottom: '20px',
-                      borderLeft: '3px solid #1d3ede'
-                    }}>
-                      <strong style={{ fontSize: '0.8rem', color: '#1d3ede', display: 'block', marginBottom: '8px' }}>CURRICULUM PREVIEW</strong>
-                      {course.weeks.slice(0, 3).map((w, wIdx) => (
-                        <div key={wIdx} style={{ fontSize: '0.85rem', color: '#4b5563', marginBottom: '4px' }}>
-                          <span style={{ color: '#1d3ede', fontWeight: 600 }}>Week {wIdx + 1}:</span> {w}
-                        </div>
-                      ))}
-                      {course.weeks.length > 3 && (
-                        <div style={{ fontSize: '0.8rem', color: '#9ca3af', marginTop: '4px' }}>+{course.weeks.length - 3} more weeks...</div>
+                      {course.tools.length > 3 && (
+                        <span style={{ fontSize: '0.75rem', color: '#94a3b8', alignSelf: 'center' }}>+{course.tools.length - 3} more</span>
                       )}
                     </div>
-                  </div>
 
-                  <button onClick={() => enrollInCourse(course.id, course.name)} style={{
-                    width: '100%',
-                    background: 'linear-gradient(135deg, #1d3ede 0%, #0a7ec0 100%)',
-                    border: 'none', borderRadius: '12px', padding: '13px',
-                    fontWeight: 600, color: '#fff', cursor: 'pointer',
-                    boxShadow: '0 4px 15px rgba(29, 62, 222, 0.15)',
-                    transition: 'all 0.3s ease', fontSize: '0.95rem'
-                  }}>
-                    Enroll Now →
-                  </button>
+                    {/* CTA buttons */}
+                    <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <button onClick={() => enrollInCourse(course.id, course.name)} style={{
+                        width: '100%',
+                        background: 'linear-gradient(135deg, #1d3ede 0%, #0a7ec0 100%)',
+                        border: 'none', borderRadius: '10px', padding: '11px',
+                        fontWeight: 700, color: '#fff', cursor: 'pointer',
+                        boxShadow: '0 4px 12px rgba(29, 62, 222, 0.12)',
+                        transition: 'all 0.3s ease', fontSize: '0.9rem',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                      }}>
+                        Enroll Now <ArrowRight size={14} />
+                      </button>
+                      <Link href={`/courses/${course.id}`} style={{
+                        width: '100%',
+                        background: '#ffffff',
+                        border: '1.5px solid #cbd5e1',
+                        borderRadius: '10px', padding: '9px',
+                        fontWeight: 600, color: '#475569', textAlign: 'center',
+                        textDecoration: 'none', transition: 'all 0.2s', fontSize: '0.85rem',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}>
+                        View Course Details
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="text-center" style={{ marginTop: '20px' }} data-aos="fade-up">
+          <div className="text-center" style={{ marginTop: '30px' }} data-aos="fade-up">
             <Link href="/courses" style={{
-              display: 'inline-block',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
               color: '#1d3ede', fontWeight: 600, fontSize: '1rem',
               textDecoration: 'none', padding: '12px 30px',
               border: '2px solid #1d3ede', borderRadius: '30px',
               transition: 'all 0.3s ease'
             }}>
-              View All 6 Courses →
+              View All 6 Courses <ArrowRight size={16} />
             </Link>
           </div>
         </div>
@@ -347,7 +383,7 @@ export default function Home() {
               <p>A world where girls are not just participants but leaders in the global tech revolution—writing the future, securely and confidently.</p>
               <h2>Enroll Now!</h2>
               <p>Terms and Condition Apply</p>
-              <a href="https://bit.ly/gisectechenroll">Join the List <i className="fa fa-angle-right" aria-hidden="true"></i></a>
+              <a href="https://bit.ly/gisectechenroll" style={{ display: 'inline-flex', alignItems: 'center' }}>Join the List <ChevronRight size={16} style={{ marginLeft: '4px' }} /></a>
             </div>
             <div className="col-md-6" data-aos="fade-left">
               <div className="card"><img className="card-img-top img-fluid" style={{ borderRadius: '1rem' }} src="/statics/anu.jpg" alt="" /></div>
@@ -548,7 +584,7 @@ export default function Home() {
             onTouchEnd={() => setIsHovered(false)}
           >
             <button className="media-carousel-btn prev" onClick={() => scrollMedia('left')} aria-label="Previous Video">
-              <i className="fa fa-angle-left" aria-hidden="true" style={{ fontSize: '24px' }}></i>
+              <ChevronLeft size={20} />
             </button>
             
             <div 
@@ -576,7 +612,7 @@ export default function Home() {
             </div>
 
             <button className="media-carousel-btn next" onClick={() => scrollMedia('right')} aria-label="Next Video">
-              <i className="fa fa-angle-right" aria-hidden="true" style={{ fontSize: '24px' }}></i>
+              <ChevronRight size={20} />
             </button>
           </div>
 
@@ -640,12 +676,12 @@ export default function Home() {
       <div className="container-fluid" style={{ padding: '80px 0', background: '#f8fafc' }} id="courses" data-aos="fade-up">
         <div className="container text-center">
           <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-            <h2 style={{ color: '#1a1a2e', fontWeight: 700, fontSize: '2.5rem', marginBottom: '20px' }}>🚀 Start Your Tech Journey</h2>
+            <h2 style={{ color: '#1a1a2e', fontWeight: 700, fontSize: '2.5rem', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}><Rocket size={28} className="text-primary" /> Start Your Tech Journey</h2>
             <p style={{ color: '#6c757d', fontSize: '1.1rem', lineHeight: '1.8', marginBottom: '35px' }}>
               Empower yourself with high-demand professional training in Software Engineering, Cybersecurity, UI/UX Product Design, Data Analytics, and Project Management. Join our next cohort and learn from industry experts.
             </p>
-            <Link href="/courses" className="btn btn-outline-dark text-uppercase" style={{ color: '#1d3ede', border: '3px solid #1d3ede', padding: '12px 35px', borderRadius: '30px', fontWeight: 600, fontSize: '1rem', transition: 'all 0.3s ease' }}>
-              Explore Our Courses <i className="fa fa-angle-right" style={{ marginLeft: '10px' }} aria-hidden="true"></i>
+            <Link href="/courses" className="btn btn-outline-dark text-uppercase" style={{ color: '#1d3ede', border: '3px solid #1d3ede', padding: '12px 35px', borderRadius: '30px', fontWeight: 600, fontSize: '1rem', transition: 'all 0.3s ease', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              Explore Our Courses <ChevronRight size={16} />
             </Link>
           </div>
         </div>
@@ -695,7 +731,7 @@ export default function Home() {
                 <div className="card-body text-left pr-0 pl-0">
                   <h5>How can i support ?</h5>
                   <p className="card-text">You can volunteer, sponsor, or become a partner.</p>
-                  <a href="https://bit.ly/gisecinterestform">Click to partner <i className="fa fa-angle-right" aria-hidden="true"></i></a>
+                  <a href="https://bit.ly/gisecinterestform" style={{ display: 'inline-flex', alignItems: 'center' }}>Click to partner <ChevronRight size={16} style={{ marginLeft: '4px' }} /></a>
                 </div>
               </div>
             </div>
@@ -732,7 +768,7 @@ export default function Home() {
               <h2>Leadership, Global exposure, Certifications and scholarship opportunities</h2>
               <p>GISEC trainings empower students with in-demand tech skills through hands-on, real-world projects and expert mentorship.</p>
               <p><small>Participants gain leadership abilities, global exposure, and certifications that boost career and scholarship opportunities.</small></p>
-              <a href="https://bit.ly/gisecinterestform">Partner <i className="fa fa-angle-right" aria-hidden="true"></i></a>
+              <a href="https://bit.ly/gisecinterestform" style={{ display: 'inline-flex', alignItems: 'center' }}>Partner <ChevronRight size={16} style={{ marginLeft: '4px' }} /></a>
             </div>
           </div>
         </div>
@@ -749,11 +785,27 @@ export default function Home() {
                 <li className="nav-item">Email: <a href="mailto:gisectechglobal@gmail.com" style={{ color: '#e3e3e3' }}>gisectechglobal@gmail.com</a></li>
               </ul>
               <h4 className="mt-5" style={{ color: '#fff' }}>Follow Us</h4>
-              <ul className="nav follow-us-nav" style={{ color: '#fff' }}>
-                <li className="nav-item"><a style={{ color: '#e3e3e3' }} className="nav-link pl-0" href="https://linktr.ee/gisectechg"><i className="fa fa-globe" aria-hidden="true"></i></a></li>
-                <li className="nav-item"><a style={{ color: '#e3e3e3' }} className="nav-link" href="https://www.instagram.com/gisectechnologies"><i className="fa fa-instagram" aria-hidden="true"></i></a></li>
-                <li className="nav-item"><a style={{ color: '#e3e3e3' }} className="nav-link" href="mailto:gisectechglobal@gmail.com"><i className="fa fa-envelope" aria-hidden="true"></i></a></li>
-                <li className="nav-item"><a style={{ color: '#e3e3e3' }} className="nav-link" href="https://www.linkedin.com/company/gisec-technologies-limited"><i className="fa fa-linkedin" aria-hidden="true"></i></a></li>
+              <ul className="nav follow-us-nav" style={{ color: '#fff', display: 'flex', gap: '15px' }}>
+                <li className="nav-item">
+                  <a style={{ color: '#e3e3e3' }} className="nav-link pl-0 pr-0" href="https://linktr.ee/gisectechg">
+                    <Globe size={18} />
+                  </a>
+                </li>
+                <li className="nav-item">
+                  <a style={{ color: '#e3e3e3' }} className="nav-link pl-0 pr-0" href="https://www.instagram.com/gisectechnologies">
+                    <Instagram size={18} />
+                  </a>
+                </li>
+                <li className="nav-item">
+                  <a style={{ color: '#e3e3e3' }} className="nav-link pl-0 pr-0" href="mailto:gisectechglobal@gmail.com">
+                    <Mail size={18} />
+                  </a>
+                </li>
+                <li className="nav-item">
+                  <a style={{ color: '#e3e3e3' }} className="nav-link pl-0 pr-0" href="https://www.linkedin.com/company/gisec-technologies-limited">
+                    <Linkedin size={18} />
+                  </a>
+                </li>
               </ul>
             </div>
             <div className="col-lg-3">

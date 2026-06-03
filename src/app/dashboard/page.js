@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import coursesData from '@/public/data/courses.json';
+import { BookOpen, FileText, CheckCircle, Lock, ArrowLeft } from 'lucide-react';
 
 export default function Dashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -165,8 +166,8 @@ export default function Dashboard() {
       `}</style>
 
       <div className="dashboard-container">
-        <div className="nav-links">
-          <Link href="/courses">← Browse Courses</Link>
+        <div className="nav-links" style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+          <Link href="/courses" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><ArrowLeft size={16} /> Browse Courses</Link>
           <Link href="/">Home</Link>
           <span onClick={logout} className="logout">Logout</span>
         </div>
@@ -180,7 +181,9 @@ export default function Dashboard() {
           <p>Overall Progress: {percent}%</p>
         </div>
 
-        <h2>📚 Weekly Curriculum</h2>
+        <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.5rem', color: '#1a1a2e', marginTop: '30px', marginBottom: '20px' }}>
+          <BookOpen size={24} style={{ color: '#6366f1' }} /> Weekly Curriculum
+        </h2>
         <div className="weeks-grid">
           {course ? (
             course.weeks.map((week, index) => {
@@ -191,19 +194,22 @@ export default function Dashboard() {
               return (
                 <div key={index} className={`week-card ${isCompleted ? 'completed' : ''} ${isLocked ? 'locked' : ''}`}>
                   <div style={{ flex: 1 }}>
-                    <h3>Week {weekNum}: {week.topic}</h3>
-                    <p style={{ margin: '8px 0', color: '#4b5563' }}>{week.content}</p>
-                    <small style={{ color: '#6b7280' }}>📝 Assignment: {week.assignment}</small>
+                    <h3 style={{ fontSize: '1.15rem', color: '#1a1a2e', fontWeight: 600 }}>Week {weekNum}: {week.topic}</h3>
+                    <p style={{ margin: '8px 0', color: '#4b5563', fontSize: '0.92rem' }}>{week.content}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#6b7280', fontSize: '0.85rem' }}>
+                      <FileText size={14} />
+                      <span>Assignment: {week.assignment}</span>
+                    </div>
                   </div>
                   <div>
                     {!isCompleted && !isLocked ? (
-                      <button onClick={() => markWeekComplete(weekNum)} className="mark-complete-btn">
-                        Mark Complete ✓
+                      <button onClick={() => markWeekComplete(weekNum)} className="mark-complete-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        Mark Complete <CheckCircle size={14} />
                       </button>
                     ) : isCompleted ? (
-                      <div className="week-status status-completed">✓</div>
+                      <div className="week-status status-completed"><CheckCircle size={18} fill="#22c55e" color="#fff" /></div>
                     ) : (
-                      <div className="week-status status-locked">🔒</div>
+                      <div className="week-status status-locked"><Lock size={16} /></div>
                     )}
                   </div>
                 </div>
