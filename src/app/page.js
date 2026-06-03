@@ -17,6 +17,8 @@ import {
   Rocket,
   BookOpen
 } from 'lucide-react';
+
+const mediaVideos = [
   "eNOLvfLhzeY",
   "wv9Up_fVafc",
   "72HbChSzhho",
