@@ -6,31 +6,23 @@
       "duration": "12 weeks",
       "tools": ["Trello", "Jira", "Slack", "Asana"],
       "price": "₦15,000",
+      "level": "Beginner",
+      "students": 45,
+      "rating": 4.7,
+      "featured": false,
+      "description": "Learn to plan, execute, and deliver projects on time using industry-standard Agile and Waterfall methodologies. This course transforms you from a beginner into a confident project manager capable of leading cross-functional teams.",
+      "whatYouLearn": [
+        "Plan and manage projects using Agile & Waterfall methodologies",
+        "Use Trello, Jira, and Asana to track project progress",
+        "Facilitate Scrum ceremonies: standups, retrospectives, sprint planning",
+        "Write professional PRDs and project documentation",
+        "Identify, assess, and mitigate project risks effectively"
+      ],
       "weeks": [
-        {
-          "week": 1,
-          "topic": "Introduction to Project Management",
-          "content": "Waterfall vs. Agile, Project lifecycle",
-          "assignment": "Create a Trello board"
-        },
-        {
-          "week": 2,
-          "topic": "Scrum Framework",
-          "content": "Sprints, Stand-ups, Retrospectives",
-          "assignment": "Run a mock daily standup"
-        },
-        {
-          "week": 3,
-          "topic": "Tools & Documentation",
-          "content": "Using Jira for tracking, writing PRDs",
-          "assignment": "Create a project plan in Jira"
-        },
-        {
-          "week": 4,
-          "topic": "Risk Management",
-          "content": "Identifying and mitigating risks",
-          "assignment": "Risk assessment matrix"
-        }
+        { "week": 1, "topic": "Introduction to Project Management", "content": "Waterfall vs. Agile, Project lifecycle", "assignment": "Create a Trello board" },
+        { "week": 2, "topic": "Scrum Framework", "content": "Sprints, Stand-ups, Retrospectives", "assignment": "Run a mock daily standup" },
+        { "week": 3, "topic": "Tools & Documentation", "content": "Using Jira for tracking, writing PRDs", "assignment": "Create a project plan in Jira" },
+        { "week": 4, "topic": "Risk Management", "content": "Identifying and mitigating risks", "assignment": "Risk assessment matrix" }
       ]
     },
     {
@@ -39,31 +31,23 @@
       "duration": "12 weeks",
       "tools": ["Miro", "Notion", "Amplitude"],
       "price": "₦15,000",
+      "level": "Beginner",
+      "students": 38,
+      "rating": 4.8,
+      "featured": false,
+      "description": "Master the art of building products users love. From ideation to launch, learn customer discovery, competitive analysis, roadmapping, and how to measure product success with data-driven KPIs.",
+      "whatYouLearn": [
+        "Understand the full product lifecycle from idea to growth",
+        "Conduct customer discovery interviews and competitor analysis",
+        "Build product roadmaps and prioritize features effectively",
+        "Define and track KPIs: DAU, MAU, retention, and churn",
+        "Use Miro, Notion, and Amplitude for product workflows"
+      ],
       "weeks": [
-        {
-          "week": 1,
-          "topic": "Product Lifecycle",
-          "content": "Idea to launch to growth",
-          "assignment": "Product idea canvas"
-        },
-        {
-          "week": 2,
-          "topic": "Market Research",
-          "content": "Customer discovery, competitor analysis",
-          "assignment": "Competitor analysis report"
-        },
-        {
-          "week": 3,
-          "topic": "Product Strategy",
-          "content": "Roadmapping, prioritization",
-          "assignment": "Create a 6-month product roadmap"
-        },
-        {
-          "week": 4,
-          "topic": "Metrics & KPIs",
-          "content": "DAU, MAU, Churn, Retention",
-          "assignment": "Calculate KPIs for a sample product"
-        }
+        { "week": 1, "topic": "Product Lifecycle", "content": "Idea to launch to growth", "assignment": "Product idea canvas" },
+        { "week": 2, "topic": "Market Research", "content": "Customer discovery, competitor analysis", "assignment": "Competitor analysis report" },
+        { "week": 3, "topic": "Product Strategy", "content": "Roadmapping, prioritization", "assignment": "Create a 6-month product roadmap" },
+        { "week": 4, "topic": "Metrics & KPIs", "content": "DAU, MAU, Churn, Retention", "assignment": "Calculate KPIs for a sample product" }
       ]
     },
     {
@@ -72,31 +56,23 @@
       "duration": "12 weeks",
       "tools": ["Figma", "Miro", "Adobe XD"],
       "price": "₦15,000",
+      "level": "Beginner",
+      "students": 52,
+      "rating": 4.9,
+      "featured": true,
+      "description": "Design beautiful, user-centered digital products from scratch. Learn design thinking, user research, wireframing, and prototyping using Figma — the industry's most in-demand design tool.",
+      "whatYouLearn": [
+        "Apply Gestalt principles, typography, and color theory in design",
+        "Conduct user research and build detailed user personas",
+        "Create user flows, wireframes, and information architecture",
+        "Build high-fidelity prototypes and interactive mockups in Figma",
+        "Run usability tests and iterate based on real user feedback"
+      ],
       "weeks": [
-        {
-          "week": 1,
-          "topic": "Design Principles",
-          "content": "Gestalt principles, typography, color theory",
-          "assignment": "Redesign a login screen"
-        },
-        {
-          "week": 2,
-          "topic": "User Research & Flows",
-          "content": "User personas, journey mapping",
-          "assignment": "Create user flow for an e-commerce app"
-        },
-        {
-          "week": 3,
-          "topic": "Wireframing in Figma",
-          "content": "Low-fidelity to high-fidelity",
-          "assignment": "Build a wireframe for a mobile app"
-        },
-        {
-          "week": 4,
-          "topic": "Prototyping & Testing",
-          "content": "Interactive prototypes, usability testing",
-          "assignment": "Figma prototype with user testing notes"
-        }
+        { "week": 1, "topic": "Design Principles", "content": "Gestalt principles, typography, color theory", "assignment": "Redesign a login screen" },
+        { "week": 2, "topic": "User Research & Flows", "content": "User personas, journey mapping", "assignment": "Create user flow for an e-commerce app" },
+        { "week": 3, "topic": "Wireframing in Figma", "content": "Low-fidelity to high-fidelity", "assignment": "Build a wireframe for a mobile app" },
+        { "week": 4, "topic": "Prototyping & Testing", "content": "Interactive prototypes, usability testing", "assignment": "Figma prototype with user testing notes" }
       ]
     },
     {
@@ -105,31 +81,23 @@
       "duration": "12 weeks",
       "tools": ["Python", "Pandas", "SQL", "PowerBI"],
       "price": "₦20,000",
+      "level": "Intermediate",
+      "students": 41,
+      "rating": 4.6,
+      "featured": false,
+      "description": "Turn raw data into powerful insights. Learn to clean, analyze, and visualize data using Excel, SQL, Python, and Power BI — the essential toolkit for any data-driven career.",
+      "whatYouLearn": [
+        "Clean and transform messy datasets using Excel and Python",
+        "Write SQL queries to extract insights from relational databases",
+        "Analyze data with Pandas DataFrames and NumPy arrays",
+        "Build interactive dashboards and reports with Power BI",
+        "Present data findings with clear, compelling visualizations"
+      ],
       "weeks": [
-        {
-          "week": 1,
-          "topic": "Excel/Google Sheets",
-          "content": "Data cleaning, pivot tables, formulas",
-          "assignment": "Clean a dirty dataset in Excel"
-        },
-        {
-          "week": 2,
-          "topic": "SQL Fundamentals",
-          "content": "SELECT, WHERE, JOIN, GROUP BY",
-          "assignment": "Write 5 SQL queries on sample data"
-        },
-        {
-          "week": 3,
-          "topic": "Python Basics",
-          "content": "Variables, loops, functions, lists",
-          "assignment": "Python data manipulation script"
-        },
-        {
-          "week": 4,
-          "topic": "Pandas & NumPy",
-          "content": "DataFrames, series, array operations",
-          "assignment": "Analyze a CSV with Pandas"
-        }
+        { "week": 1, "topic": "Excel/Google Sheets", "content": "Data cleaning, pivot tables, formulas", "assignment": "Clean a dirty dataset in Excel" },
+        { "week": 2, "topic": "SQL Fundamentals", "content": "SELECT, WHERE, JOIN, GROUP BY", "assignment": "Write 5 SQL queries on sample data" },
+        { "week": 3, "topic": "Python Basics", "content": "Variables, loops, functions, lists", "assignment": "Python data manipulation script" },
+        { "week": 4, "topic": "Pandas & NumPy", "content": "DataFrames, series, array operations", "assignment": "Analyze a CSV with Pandas" }
       ]
     },
     {
@@ -138,31 +106,23 @@
       "duration": "12 weeks",
       "tools": ["JavaScript", "Python", "React", "Django", "Git"],
       "price": "₦25,000",
+      "level": "Beginner to Intermediate",
+      "students": 67,
+      "rating": 4.9,
+      "featured": true,
+      "description": "Become a full-stack developer. Master HTML, CSS, JavaScript, React for frontend, and Python with Django for backend. You'll build real-world projects, learn Git version control, and deploy applications.",
+      "whatYouLearn": [
+        "Use Git and GitHub for professional version control and collaboration",
+        "Build responsive websites with HTML5, CSS3, Flexbox, and Grid",
+        "Program with JavaScript: DOM manipulation, functions, and objects",
+        "Create dynamic single-page apps with React components and state",
+        "Build backend APIs and database-powered apps with Python and Django"
+      ],
       "weeks": [
-        {
-          "week": 1,
-          "topic": "Git & Version Control",
-          "content": "Git init, add, commit, push, branches",
-          "assignment": "Create GitHub repo, make 3 commits"
-        },
-        {
-          "week": 2,
-          "topic": "HTML & CSS",
-          "content": "Semantic HTML, Flexbox, Grid",
-          "assignment": "Build a responsive portfolio page"
-        },
-        {
-          "week": 3,
-          "topic": "JavaScript Fundamentals",
-          "content": "Variables, functions, arrays, objects, DOM",
-          "assignment": "Build an interactive to-do app"
-        },
-        {
-          "week": 4,
-          "topic": "Python Basics",
-          "content": "Syntax, data types, OOP",
-          "assignment": "Build a student management system"
-        }
+        { "week": 1, "topic": "Git & Version Control", "content": "Git init, add, commit, push, branches", "assignment": "Create GitHub repo, make 3 commits" },
+        { "week": 2, "topic": "HTML & CSS", "content": "Semantic HTML, Flexbox, Grid", "assignment": "Build a responsive portfolio page" },
+        { "week": 3, "topic": "JavaScript Fundamentals", "content": "Variables, functions, arrays, objects, DOM", "assignment": "Build an interactive to-do app" },
+        { "week": 4, "topic": "Python Basics", "content": "Syntax, data types, OOP", "assignment": "Build a student management system" }
       ]
     },
     {
@@ -171,31 +131,23 @@
       "duration": "12 weeks",
       "tools": ["Wireshark", "Kali Linux", "Nmap"],
       "price": "₦20,000",
+      "level": "Intermediate",
+      "students": 33,
+      "rating": 4.7,
+      "featured": true,
+      "description": "Protect systems, networks, and data from cyber threats. Learn networking fundamentals, ethical hacking tools, cryptography, and security best practices used by professionals worldwide.",
+      "whatYouLearn": [
+        "Understand the OSI model, TCP/IP, DNS, and HTTP/HTTPS protocols",
+        "Identify and analyze malware, phishing, and social engineering attacks",
+        "Apply cryptographic techniques: hashing, encryption, and SSL/TLS",
+        "Use Wireshark for packet analysis and Nmap for network scanning",
+        "Perform basic penetration testing and vulnerability assessments"
+      ],
       "weeks": [
-        {
-          "week": 1,
-          "topic": "Networking Basics",
-          "content": "OSI model, TCP/IP, DNS, HTTP/HTTPS",
-          "assignment": "Capture and analyze packets with Wireshark"
-        },
-        {
-          "week": 2,
-          "topic": "Threat Landscape",
-          "content": "Malware types, phishing, social engineering",
-          "assignment": "Identify phishing email examples"
-        },
-        {
-          "week": 3,
-          "topic": "Cryptography",
-          "content": "Hashing, encryption, SSL/TLS",
-          "assignment": "Encrypt/decrypt a message using Python"
-        },
-        {
-          "week": 4,
-          "topic": "Security Tools",
-          "content": "Nmap for scanning, Wireshark for analysis",
-          "assignment": "Run a basic network scan"
-        }
+        { "week": 1, "topic": "Networking Basics", "content": "OSI model, TCP/IP, DNS, HTTP/HTTPS", "assignment": "Capture and analyze packets with Wireshark" },
+        { "week": 2, "topic": "Threat Landscape", "content": "Malware types, phishing, social engineering", "assignment": "Identify phishing email examples" },
+        { "week": 3, "topic": "Cryptography", "content": "Hashing, encryption, SSL/TLS", "assignment": "Encrypt/decrypt a message using Python" },
+        { "week": 4, "topic": "Security Tools", "content": "Nmap for scanning, Wireshark for analysis", "assignment": "Run a basic network scan" }
       ]
     }
   ]

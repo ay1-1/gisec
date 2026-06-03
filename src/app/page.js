@@ -167,140 +167,112 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Featured Course Section */}
-      <div className="container-fluid gisec-featured-course" style={{ padding: '80px 0', background: 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(10px)' }}>
+      {/* Featured Courses Section */}
+      <div className="container-fluid" style={{ padding: '80px 0', background: 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(10px)' }}>
         <div className="container">
-          <div className="text-center mb-5" data-aos="fade-up">
+          <div className="text-center" style={{ marginBottom: '50px' }} data-aos="fade-up">
             <span style={{
               background: 'rgba(29, 62, 222, 0.1)',
               color: '#1d3ede',
               padding: '6px 16px',
               borderRadius: '30px',
               fontWeight: 600,
-              fontSize: '0.9rem',
+              fontSize: '0.85rem',
               textTransform: 'uppercase',
               letterSpacing: '1px',
               display: 'inline-block',
               marginBottom: '15px'
-            }}>⭐ Flagship Program</span>
-            <h2 style={{ fontFamily: 'Lato-Bold', color: '#1a1a2e', fontSize: '2.5rem', fontWeight: 700 }}>Featured Course</h2>
-            <p style={{ color: '#6b7280', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
-              Deep dive into our most comprehensive, high-impact curriculum designed to launch your global tech career.
+            }}>⭐ Popular Programs</span>
+            <h2 style={{ fontFamily: 'Lato-Bold', color: '#1a1a2e', fontSize: '2.5rem', fontWeight: 700 }}>Featured Courses</h2>
+            <p style={{ color: '#6b7280', fontSize: '1.05rem', maxWidth: '550px', margin: '10px auto 0' }}>
+              Explore our most popular learning paths — designed to launch your global tech career.
             </p>
           </div>
 
-          <div className="row align-items-center" style={{ gap: '30px', justifyContent: 'center' }}>
-            {/* Featured Course Card */}
-            <div className="col-lg-6" data-aos="fade-right">
-              <div style={{
-                background: '#ffffff',
-                borderRadius: '24px',
-                padding: '40px',
-                boxShadow: '0 20px 40px rgba(29, 62, 222, 0.08)',
-                border: '1px solid rgba(29, 62, 222, 0.06)',
-                position: 'relative',
-                overflow: 'hidden'
-              }}>
+          <div className="row" style={{ gap: '0' }}>
+            {courses.slice(0, 3).map((course, idx) => (
+              <div className="col-lg-4 col-md-6" key={course.id} data-aos="fade-up" data-aos-delay={idx * 100} style={{ marginBottom: '30px' }}>
                 <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '5px',
-                  background: 'linear-gradient(90deg, #1d3ede, #01e6f8)'
-                }}></div>
-                <h3 style={{ fontFamily: 'Lato-Bold', fontSize: '2rem', color: '#1a1a2e', marginBottom: '10px' }}>Software Engineering</h3>
-                <h4 style={{ color: '#01e6f8', fontSize: '1.1rem', fontWeight: 600, marginBottom: '20px', textTransform: 'uppercase' }}>Full-Stack Development Track</h4>
-                
-                <p style={{ color: '#555', fontSize: '1.05rem', lineHeight: '1.7', marginBottom: '25px' }}>
-                  Our Software Engineering track is built for aspiring developers. We guide you through everything from basic web development foundations to advanced backend architectures and APIs, prepping you to build real-world software.
-                </p>
+                  background: '#ffffff',
+                  borderRadius: '20px',
+                  padding: '30px',
+                  boxShadow: '0 10px 30px rgba(29, 62, 222, 0.06)',
+                  border: '1px solid rgba(29, 62, 222, 0.06)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)'
+                }}>
+                  <div style={{
+                    position: 'absolute', top: 0, left: 0, width: '100%', height: '4px',
+                    background: 'linear-gradient(90deg, #1d3ede, #01e6f8)'
+                  }}></div>
 
-                <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', marginBottom: '30px' }}>
-                  <span style={{ background: '#f1f5f9', color: '#475569', padding: '6px 14px', borderRadius: '30px', fontSize: '0.85rem', fontWeight: 600 }}>⏱️ 12 Weeks</span>
-                  <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '6px 14px', borderRadius: '30px', fontSize: '0.85rem', fontWeight: 600 }}>🎖️ Certificate</span>
-                  <span style={{ background: '#ecfdf5', color: '#047857', padding: '6px 14px', borderRadius: '30px', fontSize: '0.85rem', fontWeight: 600 }}>₦25,000 Tuition</span>
-                </div>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                      <span style={{
+                        background: '#ecfdf5', color: '#047857',
+                        padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600
+                      }}>{course.price}</span>
+                      <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>⏱️ {course.duration}</span>
+                    </div>
 
-                <div style={{ marginBottom: '30px' }}>
-                  <strong style={{ color: '#1a1a2e', display: 'block', marginBottom: '10px', fontSize: '0.9rem' }}>Professional Tools You&apos;ll Master:</strong>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {["React", "JavaScript", "Python", "Django", "Git", "GitHub", "HTML5", "CSS3"].map((tool, idx) => (
-                      <span key={idx} style={{
-                        background: '#f8fafc',
-                        border: '1px solid rgba(0, 0, 0, 0.05)',
-                        color: '#334155',
-                        padding: '5px 12px',
-                        borderRadius: '30px',
-                        fontSize: '0.8rem',
-                        fontWeight: 500
-                      }}>{tool}</span>
-                    ))}
-                  </div>
-                </div>
+                    <h3 style={{ fontFamily: 'Lato-Bold', fontSize: '1.5rem', color: '#1a1a2e', marginBottom: '12px' }}>{course.name}</h3>
 
-                <div style={{ display: 'flex', gap: '15px', flexDirection: 'column' }}>
-                  <button onClick={() => enrollInCourse(5, 'Software Engineering')} className="btn btn-primary" style={{
-                    background: 'linear-gradient(135deg, #1d3ede 0%, #0a7ec0 100%)',
-                    border: 'none',
-                    borderRadius: '12px',
-                    padding: '14px',
-                    fontWeight: 600,
-                    color: '#fff',
-                    boxShadow: '0 4px 15px rgba(29, 62, 222, 0.2)'
-                  }}>
-                    Enroll in Software Engineering →
-                  </button>
-                  <Link href="/courses" style={{
-                    textAlign: 'center',
-                    color: '#1d3ede',
-                    fontWeight: 600,
-                    fontSize: '0.95rem',
-                    textDecoration: 'none'
-                  }}>
-                    Explore Other Courses
-                  </Link>
-                </div>
-              </div>
-            </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '20px' }}>
+                      {course.tools.map((tool, toolIdx) => (
+                        <span key={toolIdx} style={{
+                          background: '#f1f5f9', color: '#475569',
+                          padding: '4px 10px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 500,
+                          border: '1px solid rgba(0,0,0,0.03)'
+                        }}>{tool}</span>
+                      ))}
+                    </div>
 
-            {/* Curriculum Highlights */}
-            <div className="col-lg-5" data-aos="fade-left">
-              <h3 style={{ fontFamily: 'Lato-Bold', color: '#1a1a2e', fontSize: '1.8rem', marginBottom: '20px' }}>What You Will Build</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {[
-                  { title: "Personal Portfolio Website", desc: "Build a responsive web application and push it online using Git and GitHub pages." },
-                  { title: "Interactive React Dashboard", desc: "Build a full-featured task or project tracker with dynamic interface state." },
-                  { title: "Backend Student Management System", desc: "Architect database tables, develop APIs, and connect them with Django." }
-                ].map((item, idx) => (
-                  <div key={idx} style={{
-                    display: 'flex',
-                    gap: '15px',
-                    background: 'rgba(255, 255, 255, 0.6)',
-                    padding: '20px',
-                    borderRadius: '16px',
-                    border: '1px solid rgba(29, 62, 222, 0.05)'
-                  }}>
                     <div style={{
-                      background: 'linear-gradient(135deg, #1d3ede 0%, #01e6f8 100%)',
-                      color: 'white',
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justify-content: 'center',
-                      fontWeight: 'bold',
-                      flexShrink: 0
-                    }}>{idx + 1}</div>
-                    <div>
-                      <h4 style={{ color: '#1a1a2e', fontSize: '1.1rem', fontWeight: 600, marginBottom: '5px' }}>{item.title}</h4>
-                      <p style={{ color: '#6b7280', fontSize: '0.95rem', margin: 0, lineHeight: '1.5' }}>{item.desc}</p>
+                      background: '#f8fafc', borderRadius: '12px', padding: '15px', marginBottom: '20px',
+                      borderLeft: '3px solid #1d3ede'
+                    }}>
+                      <strong style={{ fontSize: '0.8rem', color: '#1d3ede', display: 'block', marginBottom: '8px' }}>CURRICULUM PREVIEW</strong>
+                      {course.weeks.slice(0, 3).map((w, wIdx) => (
+                        <div key={wIdx} style={{ fontSize: '0.85rem', color: '#4b5563', marginBottom: '4px' }}>
+                          <span style={{ color: '#1d3ede', fontWeight: 600 }}>Week {wIdx + 1}:</span> {w}
+                        </div>
+                      ))}
+                      {course.weeks.length > 3 && (
+                        <div style={{ fontSize: '0.8rem', color: '#9ca3af', marginTop: '4px' }}>+{course.weeks.length - 3} more weeks...</div>
+                      )}
                     </div>
                   </div>
-                ))}
+
+                  <button onClick={() => enrollInCourse(course.id, course.name)} style={{
+                    width: '100%',
+                    background: 'linear-gradient(135deg, #1d3ede 0%, #0a7ec0 100%)',
+                    border: 'none', borderRadius: '12px', padding: '13px',
+                    fontWeight: 600, color: '#fff', cursor: 'pointer',
+                    boxShadow: '0 4px 15px rgba(29, 62, 222, 0.15)',
+                    transition: 'all 0.3s ease', fontSize: '0.95rem'
+                  }}>
+                    Enroll Now →
+                  </button>
+                </div>
               </div>
-            </div>
+            ))}
+          </div>
+
+          <div className="text-center" style={{ marginTop: '20px' }} data-aos="fade-up">
+            <Link href="/courses" style={{
+              display: 'inline-block',
+              color: '#1d3ede', fontWeight: 600, fontSize: '1rem',
+              textDecoration: 'none', padding: '12px 30px',
+              border: '2px solid #1d3ede', borderRadius: '30px',
+              transition: 'all 0.3s ease'
+            }}>
+              View All 6 Courses →
+            </Link>
           </div>
         </div>
       </div>
