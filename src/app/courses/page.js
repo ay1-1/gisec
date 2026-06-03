@@ -368,7 +368,12 @@ export default function Courses() {
             {filteredCourses.length > 0 ? (
               <div className="course-grid">
                 {filteredCourses.map((course) => (
-                  <div key={course.id} className="course-c-card">
+                  <Link 
+                    key={course.id} 
+                    href={`/courses/${course.id}`} 
+                    className="course-c-card"
+                    style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column' }}
+                  >
                     <div className="course-c-image-wrap">
                       <img 
                         src={course.image || '/images/courses/pm.png'} 
@@ -385,7 +390,7 @@ export default function Courses() {
 
                     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
                       <div className="course-c-category">{getCategory(course.name)}</div>
-                      <h3 className="course-c-title">{course.name}</h3>
+                      <h3 className="course-c-title" style={{ textDecoration: 'none' }}>{course.name}</h3>
 
                       <div className="course-c-meta">
                         <div className="course-c-meta-item">
@@ -409,13 +414,13 @@ export default function Courses() {
                         <span className="course-c-level-badge">{course.level || 'Beginner'}</span>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                           <span className="course-c-price">{course.price}</span>
-                          <Link href={`/courses/${course.id}`} className="course-c-btn" style={{ marginTop: '10px' }}>
+                          <span className="course-c-btn" style={{ marginTop: '10px' }}>
                             View Course <ArrowRight size={13} />
-                          </Link>
+                          </span>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             ) : (

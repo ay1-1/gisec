@@ -200,101 +200,96 @@ export default function Home() {
           <div className="row" style={{ gap: '0' }}>
             {coursesData.courses.filter(c => c.featured).map((course, idx) => (
               <div className="col-lg-4 col-md-6" key={course.id} data-aos="fade-up" data-aos-delay={idx * 100} style={{ marginBottom: '30px' }}>
-                <div style={{
-                  background: '#ffffff',
-                  borderRadius: '20px',
-                  boxShadow: '0 10px 30px rgba(29, 62, 222, 0.06)',
-                  border: '1px solid rgba(29, 62, 222, 0.06)',
-                  overflow: 'hidden',
-                  height: '100%',
+                <Link href={`/courses/${course.id}`} style={{
+                  textDecoration: 'none',
+                  color: 'inherit',
                   display: 'flex',
                   flexDirection: 'column',
-                  transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)'
-                }} className="cp-card">
-                  
-                  {/* Card Cover Image */}
-                  <div style={{ height: '160px', background: '#e2e8f0', overflow: 'hidden', position: 'relative' }}>
-                    <img 
-                      src={course.image || '/images/courses/pm.png'} 
-                      alt={course.name} 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }} 
-                    />
-                    <div style={{
-                      position: 'absolute', top: 12, right: 12,
-                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                      color: 'white', padding: '3px 10px', borderRadius: '20px',
-                      fontSize: '0.7rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px'
-                    }}>
-                      <Star size={11} fill="#ffffff" color="#ffffff" />
-                      <span>Featured</span>
-                    </div>
-                  </div>
-
-                  <div style={{ padding: '25px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                      <span style={{
-                        background: '#ecfdf5', color: '#047857',
-                        padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600
-                      }}>{course.price}</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem', color: '#6b7280' }}>
-                        <Clock size={13} style={{ color: '#1d3ede' }} />
-                        <span>{course.duration}</span>
+                  height: '100%'
+                }}>
+                  <div style={{
+                    background: '#ffffff',
+                    borderRadius: '20px',
+                    boxShadow: '0 10px 30px rgba(29, 62, 222, 0.06)',
+                    border: '1px solid rgba(29, 62, 222, 0.06)',
+                    overflow: 'hidden',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)'
+                  }} className="cp-card">
+                    
+                    {/* Card Cover Image */}
+                    <div style={{ height: '160px', background: '#e2e8f0', overflow: 'hidden', position: 'relative' }}>
+                      <img 
+                        src={course.image || '/images/courses/pm.png'} 
+                        alt={course.name} 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }} 
+                      />
+                      <div style={{
+                        position: 'absolute', top: 12, right: 12,
+                        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                        color: 'white', padding: '3px 10px', borderRadius: '20px',
+                        fontSize: '0.7rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px'
+                      }}>
+                        <Star size={11} fill="#ffffff" color="#ffffff" />
+                        <span>Featured</span>
                       </div>
                     </div>
 
-                    <Link href={`/courses/${course.id}`} style={{ textDecoration: 'none' }}>
+                    <div style={{ padding: '25px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                        <span style={{
+                          background: '#ecfdf5', color: '#047857',
+                          padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600
+                        }}>{course.price}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem', color: '#6b7280' }}>
+                          <Clock size={13} style={{ color: '#1d3ede' }} />
+                          <span>{course.duration}</span>
+                        </div>
+                      </div>
+
                       <h3 style={{ fontFamily: 'Lato-Bold', fontSize: '1.35rem', color: '#1a1a2e', marginBottom: '12px', fontWeight: 700 }}>
                         {course.name}
                       </h3>
-                    </Link>
 
-                    {/* Ratings */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '15px' }}>
-                      <Star size={13} fill="#f59e0b" color="#f59e0b" />
-                      <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 700 }}>{course.rating || '4.5'}</span>
-                      <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>({course.students || 40}+ enrolled)</span>
-                    </div>
+                      {/* Ratings */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '15px' }}>
+                        <Star size={13} fill="#f59e0b" color="#f59e0b" />
+                        <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 700 }}>{course.rating || '4.5'}</span>
+                        <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>({course.students || 40}+ enrolled)</span>
+                      </div>
 
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '20px' }}>
-                      {course.tools.slice(0, 3).map((tool, toolIdx) => (
-                        <span key={toolIdx} style={{
-                          background: '#f1f5f9', color: '#475569',
-                          padding: '4px 10px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 500,
-                          border: '1px solid rgba(0,0,0,0.03)'
-                        }}>{tool}</span>
-                      ))}
-                      {course.tools.length > 3 && (
-                        <span style={{ fontSize: '0.75rem', color: '#94a3b8', alignSelf: 'center' }}>+{course.tools.length - 3} more</span>
-                      )}
-                    </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '20px' }}>
+                        {course.tools.slice(0, 3).map((tool, toolIdx) => (
+                          <span key={toolIdx} style={{
+                            background: '#f1f5f9', color: '#475569',
+                            padding: '4px 10px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 500,
+                            border: '1px solid rgba(0,0,0,0.03)'
+                          }}>{tool}</span>
+                        ))}
+                        {course.tools.length > 3 && (
+                          <span style={{ fontSize: '0.75rem', color: '#94a3b8', alignSelf: 'center' }}>+{course.tools.length - 3} more</span>
+                        )}
+                      </div>
 
-                    {/* CTA buttons */}
-                    <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <button onClick={() => enrollInCourse(course.id, course.name)} style={{
-                        width: '100%',
-                        background: 'linear-gradient(135deg, #1d3ede 0%, #0a7ec0 100%)',
-                        border: 'none', borderRadius: '10px', padding: '11px',
-                        fontWeight: 700, color: '#fff', cursor: 'pointer',
-                        boxShadow: '0 4px 12px rgba(29, 62, 222, 0.12)',
-                        transition: 'all 0.3s ease', fontSize: '0.9rem',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
-                      }}>
-                        Enroll Now <ArrowRight size={14} />
-                      </button>
-                      <Link href={`/courses/${course.id}`} style={{
-                        width: '100%',
-                        background: '#ffffff',
-                        border: '1.5px solid #cbd5e1',
-                        borderRadius: '10px', padding: '9px',
-                        fontWeight: 600, color: '#475569', textAlign: 'center',
-                        textDecoration: 'none', transition: 'all 0.2s', fontSize: '0.85rem',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                      }}>
-                        View Course Details
-                      </Link>
+                      {/* CTA button */}
+                      <div style={{ marginTop: 'auto' }}>
+                        <span style={{
+                          width: '100%',
+                          background: 'linear-gradient(135deg, #1d3ede 0%, #0a7ec0 100%)',
+                          border: 'none', borderRadius: '10px', padding: '11px',
+                          fontWeight: 700, color: '#fff',
+                          boxShadow: '0 4px 12px rgba(29, 62, 222, 0.12)',
+                          fontSize: '0.9rem',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                        }}>
+                          View Course Details <ArrowRight size={14} />
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               </div>
             ))}
           </div>
