@@ -450,7 +450,7 @@ export default function CourseDetail({ params }: PageProps) {
 
             {/* Course Content / Curriculum Accordion */}
             <div style={{ background: '#ffffff', borderRadius: '16px', padding: '30px', border: '1px solid #e2e8f0', marginBottom: '30px' }}>
-              <div style={{ display: 'flex', justifycontent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h3 style={{ fontFamily: 'Lato-Bold', fontSize: '1.35rem', color: '#0f172a', fontWeight: 700, margin: 0 }}>
                   Course Content
                 </h3>
