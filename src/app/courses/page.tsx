@@ -11,13 +11,12 @@ import {
   Star, 
   ChevronRight, 
   Globe, 
-  Instagram, 
   Mail, 
-  Linkedin,
   Sparkles,
   ArrowRight,
   Users
 } from 'lucide-react';
+import { Instagram, Linkedin } from '@/components/icons';
 
 export default function Courses() {
   const [courses, setCourses] = useState<Course[]>([]);

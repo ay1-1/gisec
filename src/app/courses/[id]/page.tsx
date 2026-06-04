@@ -22,10 +22,9 @@ import {
   Shield,
   Layers,
   Globe,
-  Instagram,
-  Mail,
-  Linkedin
+  Mail
 } from 'lucide-react';
+import { Instagram, Linkedin } from '@/components/icons';
 
 interface PageProps {
   params: {

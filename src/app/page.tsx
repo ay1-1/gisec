@@ -11,13 +11,12 @@ import {
   ChevronRight, 
   ChevronLeft, 
   Globe, 
-  Instagram, 
   Mail, 
-  Linkedin,
   ArrowRight,
   Rocket,
   BookOpen
 } from 'lucide-react';
+import { Instagram, Linkedin } from '@/components/icons';
 
 const mediaVideos: string[] = [
   "eNOLvfLhzeY",
