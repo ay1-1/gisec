@@ -118,13 +118,16 @@ export default function Home() {
           <div id="my-nav" className="collapse navbar-collapse">
             <ul className="navbar-nav mr-auto">
               <li className="nav-item"><Link className="nav-link" href="/">Home</Link></li>
+              <li className="nav-item"><a className="nav-link" href="#what-we-do">What We Do</a></li>
+              <li className="nav-item"><a className="nav-link" href="#objective">Objective</a></li>
               <li className="nav-item"><Link className="nav-link" href="/courses">Courses</Link></li>
+              <li className="nav-item"><a className="nav-link" href="#media">Media</a></li>
               <li className="nav-item"><a className="nav-link" href="#contact">Contact</a></li>
             </ul>
-            <div className="form-inline my-2 my-lg-0">
+            <form className="form-inline my-2 my-lg-0">
               <a href="https://bit.ly/gisectechenroll" className="btn btn-outline-dark my-2 my-sm-0 mr-3 text-uppercase" style={{ color: '#000', border: '3px solid rgb(128, 5, 5)' }}>Enroll</a> 
               <a href="https://bit.ly/gisecinterestform" className="btn btn-info my-2 my-sm-0 text-uppercase">Partnership</a>
-            </div>
+            </form>
           </div>
         </div>
       </nav>
@@ -180,9 +183,132 @@ export default function Home() {
       </div>
 
       {/* Featured Courses Section */}
-      <div className="container-fluid" style={{ padding: '80px 0', background: 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(10px)' }}>
+      <div className="container-fluid" style={{ padding: '85px 0', background: 'transparent' }}>
+        <style>{`
+          .featured-course-item {
+            padding: 0 15px;
+          }
+          .featured-course-card {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            transition: all 0.3s ease;
+          }
+          .featured-course-img-wrapper {
+            height: 220px;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(29, 62, 222, 0.04);
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease;
+          }
+          .featured-course-card:hover .featured-course-img-wrapper {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(29, 62, 222, 0.1);
+          }
+          .featured-course-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+          }
+          .featured-course-card:hover .featured-course-img {
+            transform: scale(1.05);
+          }
+          .featured-course-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
+          }
+          .featured-course-content {
+            padding: 20px 0px 10px 0px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+          }
+          .featured-course-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+          }
+          .featured-course-price {
+            color: #1d3ede;
+            font-size: 1.1rem;
+            font-weight: 800;
+          }
+          .featured-course-duration {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.82rem;
+            color: #6b7280;
+          }
+          .featured-course-title {
+            font-family: 'Lato-Bold', sans-serif;
+            font-size: 1.3rem;
+            color: #0f172a;
+            margin-bottom: 8px;
+            font-weight: 700;
+            line-height: 1.4;
+            transition: color 0.2s ease;
+          }
+          .featured-course-card:hover .featured-course-title {
+            color: #1d3ede;
+          }
+          .featured-course-rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 12px;
+          }
+          .featured-course-tools {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 18px;
+          }
+          .featured-course-tool-badge {
+            background: rgba(29, 62, 222, 0.05);
+            color: #1d3ede;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+          }
+          .featured-course-link {
+            color: #1d3ede;
+            font-weight: 700;
+            font-size: 0.92rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: auto;
+            transition: color 0.2s ease;
+          }
+          .featured-course-link svg {
+            transition: transform 0.2s ease;
+          }
+          .featured-course-card:hover .featured-course-link svg {
+            transform: translateX(4px);
+          }
+        `}</style>
+        
         <div className="container">
-          <div className="text-center" style={{ marginBottom: '50px' }} data-aos="fade-up">
+          <div className="text-center" style={{ marginBottom: '60px' }} data-aos="fade-up">
             <span style={{
               background: 'rgba(29, 62, 222, 0.1)',
               color: '#1d3ede',
@@ -194,9 +320,8 @@ export default function Home() {
               letterSpacing: '1px',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '5px',
               marginBottom: '15px'
-            }}><Sparkles size={14} fill="#1d3ede" /> Popular Programs</span>
+            }}>Popular Programs</span>
             <h2 style={{ fontFamily: 'Lato-Bold', color: '#1a1a2e', fontSize: '2.5rem', fontWeight: 700 }}>Featured Courses</h2>
             <p style={{ color: '#6b7280', fontSize: '1.05rem', maxWidth: '550px', margin: '10px auto 0' }}>
               Explore our most popular learning paths — designed to launch your global tech career.
@@ -205,74 +330,50 @@ export default function Home() {
 
           <div className="row" style={{ gap: '0' }}>
             {featuredCourses.map((course, idx) => (
-              <div className="col-lg-4 col-md-6" key={course.id} data-aos="fade-up" data-aos-delay={idx * 100} style={{ marginBottom: '30px' }}>
+              <div className="col-lg-4 col-md-6 featured-course-item" key={course.id} data-aos="fade-up" data-aos-delay={idx * 100} style={{ marginBottom: '40px' }}>
                 <Link href={`/courses/${course.id}`} style={{
                   textDecoration: 'none',
                   color: 'inherit',
-                  display: 'flex',
-                  flexDirection: 'column',
+                  display: 'block',
                   height: '100%'
                 }}>
-                  <div style={{
-                    background: '#ffffff',
-                    borderRadius: '20px',
-                    boxShadow: '0 10px 30px rgba(29, 62, 222, 0.06)',
-                    border: '1px solid rgba(29, 62, 222, 0.06)',
-                    overflow: 'hidden',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)'
-                  }} className="cp-card">
-                    
+                  <div className="featured-course-card">
                     {/* Card Cover Image */}
-                    <div style={{ height: '160px', background: '#e2e8f0', overflow: 'hidden', position: 'relative' }}>
+                    <div className="featured-course-img-wrapper">
                       <img 
                         src={course.image || '/images/courses/pm.png'} 
                         alt={course.name} 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }} 
+                        className="featured-course-img"
                       />
-                      <div style={{
-                        position: 'absolute', top: 12, right: 12,
-                        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                        color: 'white', padding: '3px 10px', borderRadius: '20px',
-                        fontSize: '0.7rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px'
-                      }}>
+                      <div className="featured-course-badge">
                         <Star size={11} fill="#ffffff" color="#ffffff" />
                         <span>Featured</span>
                       </div>
                     </div>
 
-                    <div style={{ padding: '25px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                        <span style={{
-                          background: '#ecfdf5', color: '#047857',
-                          padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600
-                        }}>{course.price}</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem', color: '#6b7280' }}>
+                    <div className="featured-course-content">
+                      <div className="featured-course-meta">
+                        <span className="featured-course-price">{course.price}</span>
+                        <div className="featured-course-duration">
                           <Clock size={13} style={{ color: '#1d3ede' }} />
                           <span>{course.duration}</span>
                         </div>
                       </div>
 
-                      <h3 style={{ fontFamily: 'Lato-Bold', fontSize: '1.35rem', color: '#1a1a2e', marginBottom: '12px', fontWeight: 700 }}>
+                      <h3 className="featured-course-title">
                         {course.name}
                       </h3>
 
                       {/* Ratings */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '15px' }}>
+                      <div className="featured-course-rating">
                         <Star size={13} fill="#f59e0b" color="#f59e0b" />
                         <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 700 }}>{course.rating || '4.5'}</span>
                         <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>({course.students || 40}+ enrolled)</span>
                       </div>
 
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '20px' }}>
+                      <div className="featured-course-tools">
                         {course.tools.slice(0, 3).map((tool, toolIdx) => (
-                          <span key={toolIdx} style={{
-                            background: '#f1f5f9', color: '#475569',
-                            padding: '4px 10px', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 500,
-                            border: '1px solid rgba(0,0,0,0.03)'
-                          }}>{tool}</span>
+                          <span key={toolIdx} className="featured-course-tool-badge">{tool}</span>
                         ))}
                         {course.tools.length > 3 && (
                           <span style={{ fontSize: '0.75rem', color: '#94a3b8', alignSelf: 'center' }}>+{course.tools.length - 3} more</span>
@@ -280,18 +381,8 @@ export default function Home() {
                       </div>
 
                       {/* CTA button */}
-                      <div style={{ marginTop: 'auto' }}>
-                        <span style={{
-                          width: '100%',
-                          background: 'linear-gradient(135deg, #1d3ede 0%, #0a7ec0 100%)',
-                          border: 'none', borderRadius: '10px', padding: '11px',
-                          fontWeight: 700, color: '#fff',
-                          boxShadow: '0 4px 12px rgba(29, 62, 222, 0.12)',
-                          fontSize: '0.9rem',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
-                        }}>
-                          View Course Details <ArrowRight size={14} />
-                        </span>
+                      <div className="featured-course-link">
+                        View Course Details <ArrowRight size={14} />
                       </div>
                     </div>
                   </div>

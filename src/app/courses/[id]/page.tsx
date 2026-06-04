@@ -342,13 +342,16 @@ export default function CourseDetail({ params }: PageProps) {
           <div id="my-nav" className="collapse navbar-collapse">
             <ul className="navbar-nav mr-auto">
               <li className="nav-item"><Link className="nav-link" href="/">Home</Link></li>
-              <li className="nav-item"><Link className="nav-link active" href="/courses">Courses</Link></li>
+              <li className="nav-item"><Link className="nav-link" href="/#what-we-do">What We Do</Link></li>
+              <li className="nav-item"><Link className="nav-link" href="/#objective">Objective</Link></li>
+              <li className="nav-item"><Link className="nav-link" href="/courses">Courses</Link></li>
+              <li className="nav-item"><Link className="nav-link" href="/#media">Media</Link></li>
               <li className="nav-item"><Link className="nav-link" href="/#contact">Contact</Link></li>
             </ul>
-            <div className="form-inline my-2 my-lg-0">
+            <form className="form-inline my-2 my-lg-0">
               <a href="https://bit.ly/gisectechenroll" className="btn btn-outline-dark my-2 my-sm-0 mr-3 text-uppercase" style={{ color: '#000', border: '3px solid rgb(128, 5, 5)' }}>Enroll</a>
               <a href="https://bit.ly/gisecinterestform" className="btn btn-info my-2 my-sm-0 text-uppercase">Partnership</a>
-            </div>
+            </form>
           </div>
         </div>
       </nav>
