@@ -1,18 +1,24 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, FormEvent } from 'react';
 import Link from 'next/link';
 
-export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+interface StudentData {
+  email: string;
+  fullName: string;
+  courseName: string;
+}
 
-  const handleSubmit = (e) => {
+export default function Login() {
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (typeof window !== 'undefined') {
       // Check if user exists in localStorage
-      const students = JSON.parse(localStorage.getItem('gisek_students') || '[]');
+      const students = JSON.parse(localStorage.getItem('gisek_students') || '[]') as StudentData[];
       const user = students.find(s => s.email === email);
 
       if (user) {

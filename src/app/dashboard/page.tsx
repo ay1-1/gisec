@@ -2,38 +2,55 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import coursesData from '@/public/data/courses.json';
+import { getCourses } from '@/lib/api';
+import { Course } from '@/types/course';
 import { BookOpen, FileText, CheckCircle, Lock, ArrowLeft } from 'lucide-react';
 
+interface CurrentUserSession {
+  name: string;
+  email: string;
+  course: string;
+}
+
+interface StudentProgress {
+  completedWeeks: number[];
+  currentWeek: number;
+}
+
 export default function Dashboard() {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [studentProgress, setStudentProgress] = useState({ completedWeeks: [], currentWeek: 1 });
-  const [course, setCourse] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<CurrentUserSession | null>(null);
+  const [studentProgress, setStudentProgress] = useState<StudentProgress>({ completedWeeks: [], currentWeek: 1 });
+  const [course, setCourse] = useState<Course | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const user = JSON.parse(localStorage.getItem('currentUser'));
-      if (!user) {
+      const userSession = localStorage.getItem('currentUser');
+      if (!userSession) {
         alert('Please sign up or login first');
         window.location.href = '/signup';
         return;
       }
+      const user = JSON.parse(userSession) as CurrentUserSession;
       setCurrentUser(user);
 
       // Load progress
-      const progress = JSON.parse(
-        localStorage.getItem(`progress_${user.email}`) || 
-        '{"completedWeeks": [], "currentWeek": 1}'
-      );
+      const progressSession = localStorage.getItem(`progress_${user.email}`);
+      const progress = progressSession 
+        ? (JSON.parse(progressSession) as StudentProgress)
+        : { completedWeeks: [], currentWeek: 1 };
       setStudentProgress(progress);
 
-      // Find matching course
-      const matchedCourse = coursesData.courses.find(c => 
-        c.name.toLowerCase().includes(user.course?.toLowerCase() || '')
-      );
-      setCourse(matchedCourse);
-      setLoading(false);
+      // Find matching course dynamically via API client
+      getCourses().then((data) => {
+        const matchedCourse = data.find(c => 
+          c.name.toLowerCase().includes(user.course?.toLowerCase() || '')
+        );
+        if (matchedCourse) {
+          setCourse(matchedCourse);
+        }
+        setLoading(false);
+      });
     }
   }, []);
 
@@ -44,13 +61,13 @@ export default function Dashboard() {
     }
   };
 
-  const markWeekComplete = (weekNum) => {
+  const markWeekComplete = (weekNum: number) => {
     if (!currentUser || !course) return;
 
     const newCompletedWeeks = [...studentProgress.completedWeeks];
     if (!newCompletedWeeks.includes(weekNum)) {
       newCompletedWeeks.push(weekNum);
-      const newProgress = {
+      const newProgress: StudentProgress = {
         completedWeeks: newCompletedWeeks,
         currentWeek: weekNum + 1
       };
@@ -64,7 +81,7 @@ export default function Dashboard() {
   }
 
   const completedCount = studentProgress.completedWeeks?.length || 0;
-  const totalWeeks = course ? course.weeks.length : 12;
+  const totalWeeks = course && course.weeks ? course.weeks.length : 12;
   const percent = Math.round((completedCount / totalWeeks) * 100);
 
   return (
@@ -185,7 +202,7 @@ export default function Dashboard() {
           <BookOpen size={24} style={{ color: '#6366f1' }} /> Weekly Curriculum
         </h2>
         <div className="weeks-grid">
-          {course ? (
+          {course && course.weeks ? (
             course.weeks.map((week, index) => {
               const weekNum = index + 1;
               const isCompleted = studentProgress.completedWeeks?.includes(weekNum);

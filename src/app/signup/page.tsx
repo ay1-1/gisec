@@ -1,32 +1,53 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, ChangeEvent, FormEvent } from 'react';
 import Link from 'next/link';
-import coursesData from '@/public/data/courses.json';
+import { getCourses } from '@/lib/api';
+import { Course } from '@/types/course';
 import { Clock, CreditCard, CheckCircle, ArrowLeft } from 'lucide-react';
 
+interface SelectedCourseSession {
+  id: number;
+  name: string;
+}
+
+interface StudentFormData {
+  fullName: string;
+  email: string;
+  phone: string;
+  courseId: number;
+  courseName: string;
+  paymentReceipt: string;
+  status: string;
+  enrolledAt: string;
+}
+
 export default function Signup() {
-  const [selectedCourse, setSelectedCourse] = useState(null);
-  const [courseDetails, setCourseDetails] = useState(null);
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [receiptName, setReceiptName] = useState('pending');
+  const [selectedCourse, setSelectedCourse] = useState<SelectedCourseSession | null>(null);
+  const [courseDetails, setCourseDetails] = useState<Course | null>(null);
+  const [fullName, setFullName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [phone, setPhone] = useState<string>('');
+  const [receiptName, setReceiptName] = useState<string>('pending');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const course = JSON.parse(localStorage.getItem('selectedCourse'));
-      if (course) {
+      const courseSession = localStorage.getItem('selectedCourse');
+      if (courseSession) {
+        const course = JSON.parse(courseSession) as SelectedCourseSession;
         setSelectedCourse(course);
-        const fullDetails = coursesData.courses.find(c => c.id === course.id);
-        if (fullDetails) {
-          setCourseDetails(fullDetails);
-        }
+        
+        getCourses().then((data) => {
+          const fullDetails = data.find(c => c.id === course.id);
+          if (fullDetails) {
+            setCourseDetails(fullDetails);
+          }
+        });
       }
     }
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!selectedCourse) {
@@ -36,7 +57,7 @@ export default function Signup() {
     }
 
     if (typeof window !== 'undefined') {
-      const formData = {
+      const formData: StudentFormData = {
         fullName,
         email,
         phone,
@@ -48,7 +69,7 @@ export default function Signup() {
       };
 
       // Store student data in localStorage
-      const existingStudents = JSON.parse(localStorage.getItem('gisek_students') || '[]');
+      const existingStudents = JSON.parse(localStorage.getItem('gisek_students') || '[]') as StudentFormData[];
       existingStudents.push(formData);
       localStorage.setItem('gisek_students', JSON.stringify(existingStudents));
 
@@ -64,8 +85,8 @@ export default function Signup() {
     }
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       setReceiptName(file.name);
     }

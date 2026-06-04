@@ -1,4 +1,5 @@
 import './globals.css';
+import React from 'react';
 import Script from 'next/script';
 import AosInit from './AosInit';
 
@@ -13,7 +14,11 @@ export const viewport = {
   themeColor: '#1d3ede',
 };
 
-export default function RootLayout({ children }) {
+interface RootLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
       <head>

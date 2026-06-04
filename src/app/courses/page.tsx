@@ -1,30 +1,38 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import coursesData from '@/public/data/courses.json';
+import { getCourses } from '@/lib/api';
+import { Course } from '@/types/course';
 import { 
   Search, 
   BookOpen, 
   Clock, 
   Star, 
-  Layers, 
-  Award, 
-  Users, 
   ChevronRight, 
   Globe, 
   Instagram, 
   Mail, 
   Linkedin,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Users
 } from 'lucide-react';
 
 export default function Courses() {
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const getCategory = (courseName) => {
+  useEffect(() => {
+    getCourses().then((data) => {
+      setCourses(data);
+      setLoading(false);
+    });
+  }, []);
+
+  const getCategory = (courseName: string): string => {
     const name = courseName.toLowerCase();
     if (name.includes('software') || name.includes('cyber') || name.includes('data')) return 'Engineering & Data';
     if (name.includes('design')) return 'Design';
@@ -36,14 +44,14 @@ export default function Courses() {
   const categories = ['All', 'Engineering & Data', 'Design', 'Product', 'Management'];
 
   // Filter based on active category AND search query
-  const filteredCourses = coursesData.courses.filter(course => {
+  const filteredCourses = courses.filter(course => {
     const matchesCategory = activeCategory === 'All' || getCategory(course.name) === activeCategory;
     const matchesSearch = course.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           (course.description && course.description.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
-  const renderStars = (rating) => {
+  const renderStars = (rating: number) => {
     const fullStars = Math.floor(rating);
     const hasHalf = rating - fullStars >= 0.5;
     return (
@@ -365,7 +373,11 @@ export default function Courses() {
               </span>
             </div>
 
-            {filteredCourses.length > 0 ? (
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: '#64748b' }}>
+                <h3>Loading programs...</h3>
+              </div>
+            ) : filteredCourses.length > 0 ? (
               <div className="course-grid">
                 {filteredCourses.map((course) => (
                   <Link 

@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import coursesData from '@/public/data/courses.json';
+import { getCourseById } from '@/lib/api';
+import { Course } from '@/types/course';
 import { 
   Clock, 
   Star, 
@@ -26,22 +27,29 @@ import {
   Linkedin
 } from 'lucide-react';
 
-export default function CourseDetail({ params }) {
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default function CourseDetail({ params }: PageProps) {
   const router = useRouter();
-  const [course, setCourse] = useState(null);
-  const [expandedWeeks, setExpandedWeeks] = useState({ 0: true }); // first week open by default
-  const [loading, setLoading] = useState(true);
+  const [course, setCourse] = useState<Course | null>(null);
+  const [expandedWeeks, setExpandedWeeks] = useState<Record<number, boolean>>({ 0: true }); // first week open by default
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const courseId = parseInt(params.id);
-    const matched = coursesData.courses.find(c => c.id === courseId);
-    if (matched) {
-      setCourse(matched);
-    }
-    setLoading(false);
+    getCourseById(courseId).then((matched) => {
+      if (matched) {
+        setCourse(matched);
+      }
+      setLoading(false);
+    });
   }, [params.id]);
 
-  const toggleWeek = (index) => {
+  const toggleWeek = (index: number) => {
     setExpandedWeeks(prev => ({
       ...prev,
       [index]: !prev[index]
@@ -56,7 +64,7 @@ export default function CourseDetail({ params }) {
     }
   };
 
-  const renderStars = (rating) => {
+  const renderStars = (rating: number) => {
     const fullStars = Math.floor(rating);
     const hasHalf = rating - fullStars >= 0.5;
     return (
@@ -113,7 +121,7 @@ export default function CourseDetail({ params }) {
     );
   }
 
-  const getCategory = (courseName) => {
+  const getCategory = (courseName: string): string => {
     const name = courseName.toLowerCase();
     if (name.includes('software') || name.includes('cyber') || name.includes('data')) return 'Engineering & Data';
     if (name.includes('design')) return 'Design';
@@ -368,7 +376,7 @@ export default function CourseDetail({ params }) {
               </h1>
               
               <p style={{ fontSize: '1.05rem', color: '#cbd5e1', lineHeight: 1.6, maxWidth: '750px', marginBottom: '20px' }}>
-                {course.description.substring(0, 160)}...
+                {course.description ? course.description.substring(0, 160) : ''}...
               </p>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap', fontSize: '0.88rem', color: '#cbd5e1' }}>
@@ -443,7 +451,7 @@ export default function CourseDetail({ params }) {
 
             {/* Course Content / Curriculum Accordion */}
             <div style={{ background: '#ffffff', borderRadius: '16px', padding: '30px', border: '1px solid #e2e8f0', marginBottom: '30px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifycontent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h3 style={{ fontFamily: 'Lato-Bold', fontSize: '1.35rem', color: '#0f172a', fontWeight: 700, margin: 0 }}>
                   Course Content
                 </h3>

@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
-import coursesData from '@/public/data/courses.json';
+import { getCourses } from '@/lib/api';
+import { Course } from '@/types/course';
 import { 
   Clock, 
   Star, 
@@ -18,7 +19,7 @@ import {
   BookOpen
 } from 'lucide-react';
 
-const mediaVideos = [
+const mediaVideos: string[] = [
   "eNOLvfLhzeY",
   "wv9Up_fVafc",
   "72HbChSzhho",
@@ -27,17 +28,24 @@ const mediaVideos = [
 ];
 
 export default function Home() {
-  const scrollRef = React.useRef(null);
-  const [activeMediaIndex, setActiveMediaIndex] = React.useState(0);
-  const [isHovered, setIsHovered] = React.useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [activeMediaIndex, setActiveMediaIndex] = useState<number>(0);
+  const [isHovered, setIsHovered] = useState<boolean>(false);
+  const [featuredCourses, setFeaturedCourses] = useState<Course[]>([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    getCourses().then((data) => {
+      setFeaturedCourses(data.filter(c => c.featured));
+    });
+  }, []);
+
+  useEffect(() => {
     if (isHovered) return;
 
     const interval = setInterval(() => {
       const container = scrollRef.current;
       if (container) {
-        const childWidth = container.firstElementChild ? container.firstElementChild.clientWidth : 0;
+        const childWidth = container.firstElementChild ? (container.firstElementChild as HTMLElement).clientWidth : 0;
         if (childWidth > 0) {
           const totalItems = mediaVideos.length;
           let nextIndex = activeMediaIndex + 1;
@@ -60,7 +68,7 @@ export default function Home() {
     const container = scrollRef.current;
     if (container) {
       const scrollLeft = container.scrollLeft;
-      const childWidth = container.firstElementChild ? container.firstElementChild.clientWidth : 0;
+      const childWidth = container.firstElementChild ? (container.firstElementChild as HTMLElement).clientWidth : 0;
       if (childWidth > 0) {
         const index = Math.round(scrollLeft / (childWidth + 20)); // account for gap
         setActiveMediaIndex(index);
@@ -68,10 +76,10 @@ export default function Home() {
     }
   };
 
-  const scrollToMediaIndex = (index) => {
+  const scrollToMediaIndex = (index: number) => {
     const container = scrollRef.current;
     if (container) {
-      const childWidth = container.firstElementChild ? container.firstElementChild.clientWidth : 0;
+      const childWidth = container.firstElementChild ? (container.firstElementChild as HTMLElement).clientWidth : 0;
       container.scrollTo({
         left: index * (childWidth + 20),
         behavior: 'smooth'
@@ -80,17 +88,16 @@ export default function Home() {
     }
   };
 
-  const scrollMedia = (direction) => {
+  const scrollMedia = (direction: 'left' | 'right') => {
     const container = scrollRef.current;
     if (container) {
-      const childWidth = container.firstElementChild ? container.firstElementChild.clientWidth : 0;
+      const childWidth = container.firstElementChild ? (container.firstElementChild as HTMLElement).clientWidth : 0;
       const scrollAmount = direction === 'left' ? -(childWidth + 20) : (childWidth + 20);
       container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
 
-
-  const enrollInCourse = (courseId, courseName) => {
+  const enrollInCourse = (courseId: number, courseName: string) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('selectedCourse', JSON.stringify({ id: courseId, name: courseName }));
       window.location.href = '/signup';
@@ -144,7 +151,7 @@ export default function Home() {
           <div className="row">
             <div className="col-md-7" data-aos="fade-right">
               <div className="cover">
-                <div class="card">
+                <div className="card">
                   <svg className="back-bg" width="100%" viewBox="0 0 900 700" style={{ position: 'absolute', zIndex: -1 }}>
                     <defs>
                       <linearGradient id="PSgrad_01" x1="64.279%" x2="0%" y1="76.604%" y2="0%">
@@ -198,7 +205,7 @@ export default function Home() {
           </div>
 
           <div className="row" style={{ gap: '0' }}>
-            {coursesData.courses.filter(c => c.featured).map((course, idx) => (
+            {featuredCourses.map((course, idx) => (
               <div className="col-lg-4 col-md-6" key={course.id} data-aos="fade-up" data-aos-delay={idx * 100} style={{ marginBottom: '30px' }}>
                 <Link href={`/courses/${course.id}`} style={{
                   textDecoration: 'none',
@@ -335,7 +342,7 @@ export default function Home() {
                   </div>
                   <div className="card text-center" data-aos="fade-up" data-aos-delay="200">
                     <div className="card-body">
-                      <h3 class="card-title">Excellence</h3>
+                      <h3 className="card-title">Excellence</h3>
                       <p className="card-text">We pursue top-tier training and innovation.</p>
                     </div>
                   </div>
@@ -719,7 +726,7 @@ export default function Home() {
               <div className="card text-center"><img className="card-img-top" src="/statics/apply.png" alt="" />
                 <div className="card-body text-left pr-0 pl-0">
                   <h5>Is application free ?</h5>
-                  <p class="card-text">Yes! Thanks to our sponsors and partners, training is tuition-free.</p>
+                  <p className="card-text">Yes! Thanks to our sponsors and partners, training is tuition-free.</p>
                 </div>
               </div>
             </div>

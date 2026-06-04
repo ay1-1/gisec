@@ -5,9 +5,10 @@ import { useEffect } from 'react';
 export default function AosInit() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const win = window as any;
       const initAOS = () => {
-        if (window.AOS) {
-          window.AOS.init({
+        if (win.AOS) {
+          win.AOS.init({
             duration: 800,
             once: true,
             easing: 'ease-in-out',
@@ -16,12 +17,12 @@ export default function AosInit() {
         }
       };
 
-      if (window.AOS) {
+      if (win.AOS) {
         initAOS();
       } else {
         // Poll for AOS library loading
         const interval = setInterval(() => {
-          if (window.AOS) {
+          if (win.AOS) {
             initAOS();
             clearInterval(interval);
           }
