@@ -118,10 +118,7 @@ export default function Home() {
           <div id="my-nav" className="collapse navbar-collapse">
             <ul className="navbar-nav mr-auto">
               <li className="nav-item"><Link className="nav-link" href="/">Home</Link></li>
-              <li className="nav-item"><a className="nav-link" href="#what-we-do">What We Do</a></li>
-              <li className="nav-item"><a className="nav-link" href="#objective">Objective</a></li>
               <li className="nav-item"><Link className="nav-link" href="/courses">Courses</Link></li>
-              <li className="nav-item"><a className="nav-link" href="#media">Media</a></li>
               <li className="nav-item"><a className="nav-link" href="#contact">Contact</a></li>
             </ul>
             <form className="form-inline my-2 my-lg-0">
