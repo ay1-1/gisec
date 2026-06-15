@@ -60,7 +60,7 @@ async function fetchSupabaseAuth(endpoint: string, body: any) {
 
 async function fetchSupabaseRest(
   table: string, 
-  method: 'GET' | 'POST', 
+  method: 'GET' | 'POST' | 'PATCH', 
   query: string = '', 
   body: any = null,
   headers: Record<string, string> = {}
