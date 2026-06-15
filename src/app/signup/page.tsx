@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getCourses } from '@/lib/api';
 import { Course } from '@/types/course';
 import { Clock, CreditCard, CheckCircle, ArrowLeft } from 'lucide-react';
+import { signUpUser } from '@/lib/supabase';
 
 interface SelectedCourseSession {
   id: number;
@@ -29,6 +30,8 @@ export default function Signup() {
   const [email, setEmail] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
   const [receiptName, setReceiptName] = useState<string>('pending');
+  const [paymentMethod, setPaymentMethod] = useState<'bank' | 'online'>('bank');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -47,42 +50,73 @@ export default function Signup() {
     }
   }, []);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!selectedCourse) {
       alert('Please select a course first!');
-      window.location.href = '/courses';
+      if (typeof window !== 'undefined') {
+        window.location.href = '/courses';
+      }
       return;
     }
 
-    if (typeof window !== 'undefined') {
-      const formData: StudentFormData = {
-        fullName,
-        email,
-        phone,
-        courseId: selectedCourse.id,
-        courseName: selectedCourse.name,
-        paymentReceipt: receiptName,
-        status: 'pending_verification',
-        enrolledAt: new Date().toISOString()
-      };
+    setIsSubmitting(true);
 
-      // Store student data in localStorage
-      const existingStudents = JSON.parse(localStorage.getItem('gisek_students') || '[]') as StudentFormData[];
-      existingStudents.push(formData);
-      localStorage.setItem('gisek_students', JSON.stringify(existingStudents));
+    const result = await signUpUser(
+      email,
+      fullName,
+      phone,
+      selectedCourse.id,
+      selectedCourse.name,
+      paymentMethod === 'online' ? 'online_payment' : receiptName
+    );
 
-      // Store current user session
-      localStorage.setItem('currentUser', JSON.stringify({
-        email: formData.email,
-        name: formData.fullName,
-        course: formData.courseName
-      }));
+    if (result.success && result.session) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('currentUser', JSON.stringify({
+          id: result.session.id,
+          email: result.session.email,
+          name: result.session.fullName,
+          role: result.session.role,
+          course: result.session.courseName,
+          enrolled: result.session.enrolled
+        }));
+        document.cookie = `gisec_session_token=${result.session.id}; path=/; max-age=86400; SameSite=Lax`;
+        
+        if (paymentMethod === 'online') {
+          try {
+            const amount = courseDetails ? parseInt(courseDetails.price.replace(/[^\d]/g, '')) : 0;
+            const payRes = await fetch('/api/pay', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email,
+                amount,
+                courseId: selectedCourse.id
+              })
+            });
 
-      alert('✅ Registration submitted! Your account will be activated once payment is verified.');
-      window.location.href = '/dashboard';
+            const payData = await payRes.json();
+            if (payData.success && payData.authorization_url) {
+              window.location.href = payData.authorization_url;
+              return;
+            } else {
+              throw new Error(payData.error || 'Failed to initialize payment gateway');
+            }
+          } catch (err: any) {
+            alert(`Account registered, but online gateway failed: ${err.message}. You can pay via bank transfer inside your dashboard.`);
+            window.location.href = '/dashboard';
+          }
+        } else {
+          alert('✅ Registration submitted! Your account will be activated once payment is verified.');
+          window.location.href = '/dashboard';
+        }
+      }
+    } else {
+      alert(result.error || 'Failed to complete registration. Please try again.');
     }
+    setIsSubmitting(false);
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -218,26 +252,75 @@ export default function Signup() {
             />
           </div>
           
-          <div className="payment-details">
-            <h3 style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '1.15rem', color: '#b45309' }}><CreditCard size={20} /> Payment Instructions</h3>
-            <p style={{ margin: '8px 0' }}>Bank Transfer to:</p>
-            <p><strong>Bank:</strong> GTBank<br />
-            <strong>Account Name:</strong> GISEK Technologies<br />
-            <strong>Account Number:</strong> 0123456789</p>
-            <p style={{ marginTop: '10px' }}>Amount: <strong>{courseDetails ? courseDetails.price : '₦0'}</strong></p>
-            <p style={{ marginTop: '10px' }}><small>After payment, upload your receipt below. Your account will be activated within 24 hours.</small></p>
-          </div>
-
           <div className="form-group">
-            <label>Upload Payment Receipt</label>
-            <input 
-              type="file" 
-              onChange={handleFileChange}
-              accept="image/*,.pdf" 
-            />
+            <label>Select Payment Method</label>
+            <div style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
+              <button 
+                type="button" 
+                onClick={() => setPaymentMethod('bank')} 
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: paymentMethod === 'bank' ? '2px solid #6366f1' : '1px solid #ddd',
+                  background: paymentMethod === 'bank' ? 'rgba(99, 102, 241, 0.05)' : '#fff',
+                  color: paymentMethod === 'bank' ? '#6366f1' : '#374151',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Bank Transfer
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setPaymentMethod('online')} 
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: paymentMethod === 'online' ? '2px solid #6366f1' : '1px solid #ddd',
+                  background: paymentMethod === 'online' ? 'rgba(99, 102, 241, 0.05)' : '#fff',
+                  color: paymentMethod === 'online' ? '#6366f1' : '#374151',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Pay Online (Instantly)
+              </button>
+            </div>
           </div>
 
-          <button type="submit" className="btn-submit">Complete Registration</button>
+          {paymentMethod === 'bank' ? (
+            <>
+              <div className="payment-details">
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '1.15rem', color: '#b45309' }}><CreditCard size={20} /> Payment Instructions</h3>
+                <p style={{ margin: '8px 0' }}>Bank Transfer to:</p>
+                <p><strong>Bank:</strong> GTBank<br />
+                <strong>Account Name:</strong> GISEK Technologies<br />
+                <strong>Account Number:</strong> 0123456789</p>
+                <p style={{ marginTop: '10px' }}>Amount: <strong>{courseDetails ? courseDetails.price : '₦0'}</strong></p>
+                <p style={{ marginTop: '10px' }}><small>After payment, upload your receipt below. Your account will be activated within 24 hours.</small></p>
+              </div>
+
+              <div className="form-group">
+                <label>Upload Payment Receipt</label>
+                <input 
+                  type="file" 
+                  onChange={handleFileChange}
+                  accept="image/*,.pdf" 
+                  required={paymentMethod === 'bank'}
+                />
+              </div>
+            </>
+          ) : (
+            <div style={{ padding: '20px', background: '#ecfdf5', borderRadius: '8px', border: '1px solid #10b981', color: '#065f46', marginBottom: '20px' }}>
+              <p>You will be redirected securely to Paystack to complete your payment of <strong>{courseDetails ? courseDetails.price : '₦0'}</strong>. Your course access will be activated immediately!</p>
+            </div>
+          )}
+
+          <button type="submit" disabled={isSubmitting} className="btn-submit">
+            {isSubmitting ? 'Processing...' : paymentMethod === 'online' ? 'Pay & Complete Registration' : 'Complete Registration'}
+          </button>
         </form>
         
         <Link href="/courses" className="back-link" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><ArrowLeft size={16} /> Back to Courses</Link>

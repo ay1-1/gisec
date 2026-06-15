@@ -9,27 +9,32 @@ interface StudentData {
   courseName: string;
 }
 
+import { signInUser } from '@/lib/supabase';
+
 export default function Login() {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (typeof window !== 'undefined') {
-      // Check if user exists in localStorage
-      const students = JSON.parse(localStorage.getItem('gisek_students') || '[]') as StudentData[];
-      const user = students.find(s => s.email === email);
+    const result = await signInUser(email);
 
-      if (user) {
+    if (result.success && result.session) {
+      if (typeof window !== 'undefined') {
         localStorage.setItem('currentUser', JSON.stringify({
-          email: user.email,
-          name: user.fullName,
-          course: user.courseName
+          id: result.session.id,
+          email: result.session.email,
+          name: result.session.fullName,
+          role: result.session.role,
+          course: result.session.courseName
         }));
+        document.cookie = `gisec_session_token=${result.session.id}; path=/; max-age=86400; SameSite=Lax`;
         window.location.href = '/dashboard';
-      } else {
-        alert('User not found. Please sign up first.');
+      }
+    } else {
+      alert(result.error || 'Login failed. Please verify your credentials or register.');
+      if (typeof window !== 'undefined') {
         window.location.href = '/signup';
       }
     }

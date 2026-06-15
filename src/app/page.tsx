@@ -873,7 +873,7 @@ export default function Home() {
               <ul className="nav flex-column company-nav" style={{ color: '#e3e3e3' }}>
                 <li className="nav-item">Address: Lagos, Nigeria</li>
                 <li className="nav-item">Phone: <a href="tel:+2349077222871" style={{ color: '#e3e3e3' }}>Phone Line 1</a>, <a href="tel:+2348106412859" style={{ color: '#e3e3e3' }}>Phone Line 2</a></li>
-                <li className="nav-item">Email: <a href="mailto:gisectechglobal@gmail.com" style={{ color: '#e3e3e3' }}>gisectechglobal@gmail.com</a></li>
+                <li className="nav-item">Email: <a href="mailto:info@gisectechnologies.com" style={{ color: '#e3e3e3' }}>info@gisectechnologies.com</a></li>
               </ul>
               <h4 className="mt-5" style={{ color: '#fff' }}>Follow Us</h4>
               <ul className="nav follow-us-nav" style={{ color: '#fff', display: 'flex', gap: '15px' }}>
@@ -888,7 +888,7 @@ export default function Home() {
                   </a>
                 </li>
                 <li className="nav-item">
-                  <a style={{ color: '#e3e3e3' }} className="nav-link pl-0 pr-0" href="mailto:gisectechglobal@gmail.com">
+                  <a style={{ color: '#e3e3e3' }} className="nav-link pl-0 pr-0" href="mailto:info@gisectechnologies.com">
                     <Mail size={18} />
                   </a>
                 </li>
