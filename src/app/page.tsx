@@ -122,7 +122,7 @@ export default function Home() {
               <li className="nav-item"><a className="nav-link" href="#contact">Contact</a></li>
             </ul>
             <form className="form-inline my-2 my-lg-0">
-              <a href="https://bit.ly/gisectechenroll" className="btn btn-outline-dark my-2 my-sm-0 mr-3 text-uppercase" style={{ color: '#000', border: '3px solid rgb(128, 5, 5)' }}>Enroll</a> 
+              <Link href="/login" className="btn btn-outline-primary my-2 my-sm-0 mr-3 text-uppercase" style={{ color: '#1d3ede', border: '3px solid #1d3ede' }}>Login</Link> 
               <a href="https://bit.ly/gisecinterestform" className="btn btn-info my-2 my-sm-0 text-uppercase">Partnership</a>
             </form>
           </div>
@@ -474,7 +474,7 @@ export default function Home() {
               <p>A world where girls are not just participants but leaders in the global tech revolution—writing the future, securely and confidently.</p>
               <h2>Enroll Now!</h2>
               <p>Terms and Condition Apply</p>
-              <a href="https://bit.ly/gisectechenroll" style={{ display: 'inline-flex', alignItems: 'center' }}>Join the List <ChevronRight size={16} style={{ marginLeft: '4px' }} /></a>
+              <Link href="/courses" style={{ display: 'inline-flex', alignItems: 'center' }}>Join the List <ChevronRight size={16} style={{ marginLeft: '4px' }} /></Link>
             </div>
             <div className="col-md-6" data-aos="fade-left">
               <div className="card"><img className="card-img-top img-fluid" style={{ borderRadius: '1rem' }} src="/statics/anu.jpg" alt="" /></div>
@@ -873,7 +873,7 @@ export default function Home() {
               <ul className="nav flex-column company-nav" style={{ color: '#e3e3e3' }}>
                 <li className="nav-item">Address: Lagos, Nigeria</li>
                 <li className="nav-item">Phone: <a href="tel:+2349077222871" style={{ color: '#e3e3e3' }}>Phone Line 1</a>, <a href="tel:+2348106412859" style={{ color: '#e3e3e3' }}>Phone Line 2</a></li>
-                <li className="nav-item">Email: <a href="mailto:gisectechglobal@gmail.com" style={{ color: '#e3e3e3' }}>gisectechglobal@gmail.com</a></li>
+                <li className="nav-item">Email: <a href="mailto:info@gisectechnologies.com" style={{ color: '#e3e3e3' }}>info@gisectechnologies.com</a></li>
               </ul>
               <h4 className="mt-5" style={{ color: '#fff' }}>Follow Us</h4>
               <ul className="nav follow-us-nav" style={{ color: '#fff', display: 'flex', gap: '15px' }}>
@@ -888,7 +888,7 @@ export default function Home() {
                   </a>
                 </li>
                 <li className="nav-item">
-                  <a style={{ color: '#e3e3e3' }} className="nav-link pl-0 pr-0" href="mailto:gisectechglobal@gmail.com">
+                  <a style={{ color: '#e3e3e3' }} className="nav-link pl-0 pr-0" href="mailto:info@gisectechnologies.com">
                     <Mail size={18} />
                   </a>
                 </li>

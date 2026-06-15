@@ -346,7 +346,7 @@ export default function CourseDetail({ params }: PageProps) {
               <li className="nav-item"><Link className="nav-link" href="/#contact">Contact</Link></li>
             </ul>
             <form className="form-inline my-2 my-lg-0">
-              <a href="https://bit.ly/gisectechenroll" className="btn btn-outline-dark my-2 my-sm-0 mr-3 text-uppercase" style={{ color: '#000', border: '3px solid rgb(128, 5, 5)' }}>Enroll</a>
+              <Link href="/login" className="btn btn-outline-primary my-2 my-sm-0 mr-3 text-uppercase" style={{ color: '#1d3ede', border: '3px solid #1d3ede' }}>Login</Link>
               <a href="https://bit.ly/gisecinterestform" className="btn btn-info my-2 my-sm-0 text-uppercase">Partnership</a>
             </form>
           </div>
@@ -547,9 +547,9 @@ export default function CourseDetail({ params }: PageProps) {
                   <button onClick={enrollInCourse} className="enroll-action-btn">
                     Enroll Now
                   </button>
-                  <a href="https://bit.ly/gisectechenroll" target="_blank" rel="noreferrer" className="apply-action-btn">
-                    Apply via Form
-                  </a>
+                  <button onClick={enrollInCourse} className="apply-action-btn">
+                    Apply Online
+                  </button>
                 </div>
 
                 {/* Features Checklist */}
@@ -600,7 +600,7 @@ export default function CourseDetail({ params }: PageProps) {
               <ul className="nav flex-column company-nav" style={{ color: '#e3e3e3' }}>
                 <li className="nav-item">Address: Lagos, Nigeria</li>
                 <li className="nav-item">Phone: <a href="tel:+2349077222871" style={{ color: '#e3e3e3' }}>Phone Line 1</a>, <a href="tel:+2348106412859" style={{ color: '#e3e3e3' }}>Phone Line 2</a></li>
-                <li className="nav-item">Email: <a href="mailto:gisectechglobal@gmail.com" style={{ color: '#e3e3e3' }}>gisectechglobal@gmail.com</a></li>
+                <li className="nav-item">Email: <a href="mailto:info@gisectechnologies.com" style={{ color: '#e3e3e3' }}>info@gisectechnologies.com</a></li>
               </ul>
               <h4 className="mt-4" style={{ color: '#fff' }}>Follow Us</h4>
               <ul className="nav follow-us-nav" style={{ color: '#fff', display: 'flex', gap: '15px' }}>
@@ -615,7 +615,7 @@ export default function CourseDetail({ params }: PageProps) {
                   </a>
                 </li>
                 <li className="nav-item">
-                  <a style={{ color: '#e3e3e3' }} className="nav-link pl-0 pr-0" href="mailto:gisectechglobal@gmail.com">
+                  <a style={{ color: '#e3e3e3' }} className="nav-link pl-0 pr-0" href="mailto:info@gisectechnologies.com">
                     <Mail size={18} />
                   </a>
                 </li>
