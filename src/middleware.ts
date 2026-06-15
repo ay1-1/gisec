@@ -4,8 +4,8 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Protect the dashboard routes
-  if (pathname.startsWith('/dashboard')) {
+  // Protect the dashboard and admin routes
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
     const sessionToken = request.cookies.get('gisec_session_token')?.value;
 
     // In a real-world scenario, we verify the JWT token via Supabase or jose library.
@@ -23,5 +23,5 @@ export function middleware(request: NextRequest) {
 
 // Match only the routes we want to guard
 export const config = {
-  matcher: ['/dashboard/:path*'],
+  matcher: ['/dashboard/:path*', '/admin/:path*'],
 };

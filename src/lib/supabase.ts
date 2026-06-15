@@ -598,3 +598,348 @@ export async function updateUserProfile(
     return { success: false, error: 'User not found in local records' };
   }
 }
+
+// ==============================================================================
+// ADMIN OPERATIONS (COHORT, STUDENT, AND ROLE MANAGEMENT)
+// ==============================================================================
+
+export interface AdminStats {
+  totalStudents: number;
+  totalTutors: number;
+  activeCohorts: number;
+  totalRevenue: string;
+}
+
+export interface AdminStudentData {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  courseName: string;
+  cohortId?: number;
+  cohortName?: string;
+  paidStatus: boolean;
+  enrolledAt: string;
+}
+
+export interface AdminCohortData {
+  id: number;
+  courseId: number;
+  courseName: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+}
+
+export async function getAdminStats(): Promise<AdminStats> {
+  if (isLiveDb()) {
+    try {
+      const users = await fetchSupabaseRest('users', 'GET');
+      const cohorts = await fetchSupabaseRest('cohorts', 'GET');
+      const enrollments = await fetchSupabaseRest('enrollments', 'GET');
+      
+      const studentsCount = users.filter((u: any) => u.role === 'student').length;
+      const tutorsCount = users.filter((u: any) => u.role === 'tutor' || u.role === 'admin').length;
+      const activeCohortsCount = cohorts.filter((c: any) => c.is_active).length;
+      const paidCount = enrollments.filter((e: any) => e.paid_status).length;
+      
+      const totalRev = paidCount * 150000;
+      
+      return {
+        totalStudents: studentsCount,
+        totalTutors: tutorsCount,
+        activeCohorts: activeCohortsCount,
+        totalRevenue: `₦${totalRev.toLocaleString()}`
+      };
+    } catch (err) {
+      console.error(err);
+      return { totalStudents: 0, totalTutors: 0, activeCohorts: 0, totalRevenue: '₦0' };
+    }
+  } else {
+    const students = getLocalStorageItem<any[]>('gisek_students', []);
+    const cohorts = getLocalStorageItem<any[]>('gisek_cohorts', [
+      { id: 1, course_id: 1, name: 'SE Cohort 1', start_date: '2026-06-01', end_date: '2026-09-01', is_active: true },
+      { id: 2, course_id: 2, name: 'DA Cohort 1', start_date: '2026-06-01', end_date: '2026-09-01', is_active: true }
+    ]);
+    const tutorsCount = students.filter(s => s.role === 'tutor' || s.role === 'admin' || s.email.includes('admin') || s.email.includes('tutor')).length + 2; 
+    const activeCount = cohorts.filter(c => c.is_active).length;
+    const paidCount = students.filter(s => s.status === 'active' || s.status === 'verified' || s.status === 'paid').length;
+    
+    return {
+      totalStudents: students.filter(s => !s.role || s.role === 'student').length,
+      totalTutors: tutorsCount,
+      activeCohorts: activeCount,
+      totalRevenue: `₦${(paidCount * 150000).toLocaleString()}`
+    };
+  }
+}
+
+export async function getAdminStudents(): Promise<AdminStudentData[]> {
+  if (isLiveDb()) {
+    try {
+      const users = await fetchSupabaseRest('users', 'GET', '?role=eq.student');
+      const enrollments = await fetchSupabaseRest('enrollments', 'GET');
+      const cohorts = await fetchSupabaseRest('cohorts', 'GET');
+      const courses = await fetchSupabaseRest('courses', 'GET');
+      
+      return users.map((u: any) => {
+        const enrollment = enrollments.find((e: any) => e.user_id === u.id);
+        const cohort = enrollment ? cohorts.find((c: any) => c.id === enrollment.cohort_id) : null;
+        const course = cohort ? courses.find((cr: any) => cr.id === cohort.course_id) : null;
+        
+        return {
+          id: u.id,
+          fullName: u.full_name,
+          email: u.email,
+          phone: u.phone || 'N/A',
+          courseName: course ? course.name : 'Not Assigned',
+          cohortId: cohort ? cohort.id : undefined,
+          cohortName: cohort ? cohort.name : undefined,
+          paidStatus: enrollment ? enrollment.paid_status : false,
+          enrolledAt: u.created_at
+        };
+      });
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  } else {
+    const students = getLocalStorageItem<any[]>('gisek_students', []);
+    const cohorts = getLocalStorageItem<any[]>('gisek_cohorts', [
+      { id: 1, course_id: 1, name: 'SE Cohort 1', start_date: '2026-06-01', end_date: '2026-09-01', is_active: true },
+      { id: 2, course_id: 2, name: 'DA Cohort 1', start_date: '2026-06-01', end_date: '2026-09-01', is_active: true }
+    ]);
+    
+    return students
+      .filter(s => !s.role || s.role === 'student')
+      .map(s => {
+        const cohort = cohorts.find(c => c.id === s.cohortId || (c.course_id === s.courseId));
+        return {
+          id: s.id,
+          fullName: s.fullName,
+          email: s.email,
+          phone: s.phone || 'N/A',
+          courseName: s.courseName || 'Software Engineering',
+          cohortId: s.cohortId || (cohort ? cohort.id : undefined),
+          cohortName: s.cohortName || (cohort ? cohort.name : undefined),
+          paidStatus: s.status === 'active' || s.status === 'verified' || s.status === 'paid',
+          enrolledAt: s.enrolledAt || new Date().toISOString()
+        };
+      });
+  }
+}
+
+export async function getAdminCohorts(): Promise<AdminCohortData[]> {
+  if (isLiveDb()) {
+    try {
+      const cohorts = await fetchSupabaseRest('cohorts', 'GET');
+      const courses = await fetchSupabaseRest('courses', 'GET');
+      
+      return cohorts.map((c: any) => {
+        const course = courses.find((cr: any) => cr.id === c.course_id);
+        return {
+          id: c.id,
+          courseId: c.course_id,
+          courseName: course ? course.name : 'Unknown',
+          name: c.name,
+          startDate: c.start_date,
+          endDate: c.end_date,
+          isActive: c.is_active
+        };
+      });
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  } else {
+    const cohorts = getLocalStorageItem<any[]>('gisek_cohorts', [
+      { id: 1, course_id: 1, name: 'SE Cohort 1', start_date: '2026-06-01', end_date: '2026-09-01', is_active: true },
+      { id: 2, course_id: 2, name: 'DA Cohort 1', start_date: '2026-06-01', end_date: '2026-09-01', is_active: true }
+    ]);
+    const courses = [
+      { id: 1, name: 'Software Engineering' },
+      { id: 2, name: 'Data Analytics' },
+      { id: 3, name: 'Cybersecurity' },
+      { id: 4, name: 'UI/UX Design' },
+      { id: 5, name: 'Product Management' },
+      { id: 6, name: 'Digital Marketing' }
+    ];
+    
+    return cohorts.map(c => {
+      const course = courses.find(cr => cr.id === c.course_id || cr.name.toLowerCase() === c.name.toLowerCase());
+      return {
+        id: c.id,
+        courseId: c.course_id,
+        courseName: course ? course.name : 'Software Engineering',
+        name: c.name,
+        startDate: c.start_date,
+        endDate: c.end_date,
+        isActive: c.is_active
+      };
+    });
+  }
+}
+
+export async function createNewCohort(
+  courseId: number,
+  name: string,
+  startDate: string,
+  endDate: string
+): Promise<{ success: boolean; error?: string }> {
+  if (isLiveDb()) {
+    try {
+      await fetchSupabaseRest('cohorts', 'POST', '', {
+        course_id: courseId,
+        name,
+        start_date: startDate,
+        end_date: endDate,
+        is_active: true
+      });
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  } else {
+    const cohorts = getLocalStorageItem<any[]>('gisek_cohorts', [
+      { id: 1, course_id: 1, name: 'SE Cohort 1', start_date: '2026-06-01', end_date: '2026-09-01', is_active: true },
+      { id: 2, course_id: 2, name: 'DA Cohort 1', start_date: '2026-06-01', end_date: '2026-09-01', is_active: true }
+    ]);
+    const newId = cohorts.length > 0 ? Math.max(...cohorts.map(c => c.id)) + 1 : 1;
+    cohorts.push({
+      id: newId,
+      course_id: courseId,
+      name,
+      start_date: startDate,
+      end_date: endDate,
+      is_active: true
+    });
+    setLocalStorageItem('gisek_cohorts', cohorts);
+    return { success: true };
+  }
+}
+
+export async function toggleCohortStatus(
+  cohortId: number,
+  isActive: boolean
+): Promise<{ success: boolean; error?: string }> {
+  if (isLiveDb()) {
+    try {
+      await fetchSupabaseRest('cohorts', 'PATCH', `?id=eq.${cohortId}`, {
+        is_active: isActive
+      });
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  } else {
+    const cohorts = getLocalStorageItem<any[]>('gisek_cohorts', []);
+    const idx = cohorts.findIndex(c => c.id === cohortId);
+    if (idx >= 0) {
+      cohorts[idx].is_active = isActive;
+      setLocalStorageItem('gisek_cohorts', cohorts);
+      return { success: true };
+    }
+    return { success: false, error: 'Cohort not found' };
+  }
+}
+
+export async function onboardNewTutor(
+  email: string,
+  fullName: string,
+  role: 'tutor' | 'admin' = 'tutor'
+): Promise<{ success: boolean; error?: string }> {
+  if (isLiveDb()) {
+    try {
+      const tempPassword = `GisecStaff@${email.split('@')[0]}!`;
+      
+      const authData = await fetchSupabaseAuth('signup', {
+        email,
+        password: tempPassword,
+        data: {
+          full_name: fullName
+        }
+      });
+      
+      if (!authData.user) throw new Error('Auth creation failed');
+      const userId = authData.user.id;
+      
+      await fetchSupabaseRest('users', 'POST', '', {
+        id: userId,
+        email,
+        full_name: fullName,
+        role: role
+      });
+      
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  } else {
+    const students = getLocalStorageItem<any[]>('gisek_students', []);
+    const exists = students.some(s => s.email === email);
+    if (exists) {
+      const idx = students.findIndex(s => s.email === email);
+      students[idx].role = role;
+      students[idx].fullName = fullName;
+      setLocalStorageItem('gisek_students', students);
+      return { success: true };
+    }
+    
+    students.push({
+      id: crypto.randomUUID(),
+      fullName,
+      email,
+      role: role,
+      status: 'active',
+      enrolledAt: new Date().toISOString()
+    });
+    setLocalStorageItem('gisek_students', students);
+    return { success: true };
+  }
+}
+
+export async function updateStudentEnrollment(
+  userId: string,
+  cohortId: number,
+  paidStatus: boolean
+): Promise<{ success: boolean; error?: string }> {
+  if (isLiveDb()) {
+    try {
+      const enrollments = await fetchSupabaseRest('enrollments', 'GET', `?user_id=eq.${userId}`);
+      if (enrollments && enrollments.length > 0) {
+        await fetchSupabaseRest('enrollments', 'PATCH', `?user_id=eq.${userId}`, {
+          cohort_id: cohortId,
+          paid_status: paidStatus
+        });
+      } else {
+        await fetchSupabaseRest('enrollments', 'POST', '', {
+          user_id: userId,
+          cohort_id: cohortId,
+          paid_status: paidStatus,
+          payment_reference: `REF-ADMIN-${Date.now()}`
+        });
+      }
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  } else {
+    const students = getLocalStorageItem<any[]>('gisek_students', []);
+    const idx = students.findIndex(s => s.id === userId);
+    if (idx >= 0) {
+      const cohorts = getLocalStorageItem<any[]>('gisek_cohorts', []);
+      const matchedCohort = cohorts.find(c => c.id === cohortId);
+      
+      students[idx].cohortId = cohortId;
+      if (matchedCohort) {
+        students[idx].cohortName = matchedCohort.name;
+        students[idx].courseId = matchedCohort.course_id;
+      }
+      students[idx].status = paidStatus ? 'verified' : 'pending_verification';
+      setLocalStorageItem('gisek_students', students);
+      return { success: true };
+    }
+    return { success: false, error: 'Student profile not found' };
+  }
+}

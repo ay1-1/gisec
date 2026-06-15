@@ -445,6 +445,9 @@ export default function Dashboard() {
         <div className="nav-links" style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
           <Link href="/courses" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><ArrowLeft size={16} /> Browse Courses</Link>
           <Link href="/">Home</Link>
+          {currentUser?.role === 'admin' && (
+            <Link href="/admin" style={{ color: '#01e6f8', fontWeight: 600 }}>Admin Panel</Link>
+          )}
           <span onClick={logout} className="logout">Logout</span>
         </div>
         
