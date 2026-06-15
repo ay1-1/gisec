@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gisec-blue: #1d3ede;
+  --color-gisec-cyan: #01e6f8;
+  --color-gisec-dark: #0f172a;
+}
+
+/* Override Tailwind CSS collapse utility which conflicts with Bootstrap's collapse */
+.collapse.navbar-collapse {
+  visibility: visible !important;
+}
+
