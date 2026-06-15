@@ -294,7 +294,7 @@ export default function Courses() {
               <li className="nav-item"><Link className="nav-link" href="/#contact">Contact</Link></li>
             </ul>
             <form className="form-inline my-2 my-lg-0">
-              <a href="https://bit.ly/gisectechenroll" className="btn btn-outline-dark my-2 my-sm-0 mr-3 text-uppercase" style={{ color: '#000', border: '3px solid rgb(128, 5, 5)' }}>Enroll</a>
+              <Link href="/courses" className="btn btn-outline-dark my-2 my-sm-0 mr-3 text-uppercase" style={{ color: '#000', border: '3px solid rgb(128, 5, 5)' }}>Enroll</Link>
               <a href="https://bit.ly/gisecinterestform" className="btn btn-info my-2 my-sm-0 text-uppercase">Partnership</a>
             </form>
           </div>
