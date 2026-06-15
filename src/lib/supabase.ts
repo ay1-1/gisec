@@ -100,9 +100,9 @@ export async function signUpUser(
   email: string,
   fullName: string,
   phone: string,
-  courseId: number,
-  courseName: string,
-  paymentReceiptName: string
+  courseId: number | null,
+  courseName: string | null,
+  paymentReceiptName: string | null
 ): Promise<{ success: boolean; error?: string; session?: UserSession }> {
   if (isLiveDb()) {
     try {
@@ -129,22 +129,24 @@ export async function signUpUser(
         role: 'student'
       });
 
-      // 3. Find active cohort for this course
-      const cohorts = await fetchSupabaseRest('cohorts', 'GET', `?course_id=eq.${courseId}&is_active=eq.true&limit=1`);
-      
-      let cohortId = null;
-      if (cohorts && cohorts.length > 0) {
-        cohortId = cohorts[0].id;
-      }
+      if (courseId) {
+        // 3. Find active cohort for this course
+        const cohorts = await fetchSupabaseRest('cohorts', 'GET', `?course_id=eq.${courseId}&is_active=eq.true&limit=1`);
+        
+        let cohortId = null;
+        if (cohorts && cohorts.length > 0) {
+          cohortId = cohorts[0].id;
+        }
 
-      if (cohortId) {
-        // Create pending enrollment record
-        await fetchSupabaseRest('enrollments', 'POST', '', {
-          user_id: userId,
-          cohort_id: cohortId,
-          paid_status: false,
-          payment_reference: `REF-${Date.now()}-${Math.floor(Math.random() * 1000)}`
-        });
+        if (cohortId) {
+          // Create pending enrollment record
+          await fetchSupabaseRest('enrollments', 'POST', '', {
+            user_id: userId,
+            cohort_id: cohortId,
+            paid_status: false,
+            payment_reference: `REF-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+          });
+        }
       }
 
       const session: UserSession = {
@@ -152,8 +154,8 @@ export async function signUpUser(
         email,
         fullName,
         role: 'student',
-        courseId,
-        courseName,
+        courseId: courseId || undefined,
+        courseName: courseName || undefined,
         enrolled: false
       };
 
@@ -180,7 +182,7 @@ export async function signUpUser(
       courseId,
       courseName,
       paymentReceipt: paymentReceiptName,
-      status: 'pending_verification',
+      status: courseId ? 'pending_verification' : 'registered',
       enrolledAt: new Date().toISOString()
     };
 
@@ -192,8 +194,8 @@ export async function signUpUser(
       email,
       fullName,
       role: 'student',
-      courseId,
-      courseName,
+      courseId: courseId || undefined,
+      courseName: courseName || undefined,
       enrolled: false
     };
 
@@ -941,5 +943,82 @@ export async function updateStudentEnrollment(
       return { success: true };
     }
     return { success: false, error: 'Student profile not found' };
+  }
+}
+
+/**
+ * Enroll a student in a course track from the dashboard
+ */
+export async function enrollInCourse(
+  userId: string,
+  courseId: number,
+  courseName: string,
+  paymentMethod: 'bank' | 'online',
+  receiptName: string | null
+): Promise<{ success: boolean; error?: string }> {
+  if (isLiveDb()) {
+    try {
+      // 1. Find active cohort
+      const cohorts = await fetchSupabaseRest('cohorts', 'GET', `?course_id=eq.${courseId}&is_active=eq.true&limit=1`);
+      if (!cohorts || cohorts.length === 0) {
+        throw new Error('No active cohort found for this track. Please contact support.');
+      }
+      const cohortId = cohorts[0].id;
+
+      // 2. Insert or update enrollment
+      const enrollments = await fetchSupabaseRest('enrollments', 'GET', `?user_id=eq.${userId}&cohort_id=eq.${cohortId}`);
+      
+      const reference = paymentMethod === 'online' 
+        ? `REF-PAYSTACK-${Date.now()}`
+        : (receiptName || `REF-BANK-${Date.now()}`);
+
+      if (enrollments && enrollments.length > 0) {
+        await fetchSupabaseRest('enrollments', 'PATCH', `?id=eq.${enrollments[0].id}`, {
+          paid_status: false,
+          payment_reference: reference
+        });
+      } else {
+        await fetchSupabaseRest('enrollments', 'POST', '', {
+          user_id: userId,
+          cohort_id: cohortId,
+          paid_status: false,
+          payment_reference: reference
+        });
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      console.error(err);
+      return { success: false, error: err.message };
+    }
+  } else {
+    // LocalStorage Mock
+    const students = getLocalStorageItem<any[]>('gisek_students', []);
+    const idx = students.findIndex(s => s.id === userId);
+    
+    if (idx >= 0) {
+      students[idx].courseId = courseId;
+      students[idx].courseName = courseName;
+      students[idx].paymentReceipt = receiptName;
+      students[idx].status = paymentMethod === 'online' ? 'verified' : 'pending_verification';
+      setLocalStorageItem('gisek_students', students);
+
+      // Also update currentUser in localStorage if active
+      if (typeof window !== 'undefined') {
+        const userSession = localStorage.getItem('currentUser');
+        if (userSession) {
+          const user = JSON.parse(userSession);
+          if (user.id === userId) {
+            user.course = courseName;
+            user.courseId = courseId;
+            user.enrolled = paymentMethod === 'online'; // online activates immediately in mock
+            localStorage.setItem('currentUser', JSON.stringify(user));
+          }
+        }
+      }
+      
+      return { success: true };
+    }
+    return { success: false, error: 'User profile not found in local records' };
   }
 }
