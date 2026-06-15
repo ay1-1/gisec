@@ -118,8 +118,9 @@ export async function signUpUser(
         }
       });
 
-      if (!authData.user) throw new Error('Auth creation failed');
-      const userId = authData.user.id;
+      const user = authData.user || (authData.id ? authData : null);
+      if (!user) throw new Error('Auth creation failed');
+      const userId = user.id;
 
       // 2. Insert user profile into custom users table
       await fetchSupabaseRest('users', 'POST', '', {
