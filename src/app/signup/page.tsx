@@ -243,7 +243,7 @@ export default function Signup() {
               <li className="nav-item"><Link className="nav-link" href="/#contact">Contact</Link></li>
             </ul>
             <form className="form-inline my-2 my-lg-0">
-              <Link href="/courses" className="btn btn-outline-dark my-2 my-sm-0 mr-3 text-uppercase" style={{ color: '#000', border: '3px solid rgb(128, 5, 5)', borderRadius: '30px', fontWeight: 600, padding: '6px 20px' }}>Enroll</Link>
+              <Link href="/login" className="btn btn-outline-primary my-2 my-sm-0 mr-3 text-uppercase" style={{ color: '#1d3ede', border: '3px solid #1d3ede' }}>Login</Link>
               <a href="https://bit.ly/gisecinterestform" className="btn btn-info my-2 my-sm-0 text-uppercase">Partnership</a>
             </form>
           </div>

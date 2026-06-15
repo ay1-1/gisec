@@ -140,7 +140,6 @@ export default function Login() {
               <li className="nav-item"><Link className="nav-link" href="/#contact">Contact</Link></li>
             </ul>
             <form className="form-inline my-2 my-lg-0">
-              <Link href="/courses" className="btn btn-outline-dark my-2 my-sm-0 mr-3 text-uppercase" style={{ color: '#000', border: '3px solid rgb(128, 5, 5)', borderRadius: '30px', fontWeight: 600, padding: '6px 20px' }}>Enroll</Link>
               <a href="https://bit.ly/gisecinterestform" className="btn btn-info my-2 my-sm-0 text-uppercase">Partnership</a>
             </form>
           </div>
