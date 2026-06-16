@@ -16,6 +16,7 @@ export interface Course {
   rating?: number;
   featured?: boolean;
   image?: string;
+  videoUrl?: string;
   description?: string;
   whatYouLearn?: string[];
   weeks?: SyllabusWeek[];

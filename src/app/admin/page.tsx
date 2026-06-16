@@ -28,10 +28,13 @@ import {
   toggleCohortStatus, 
   onboardNewTutor, 
   updateStudentEnrollment,
+  updateCourseDetails,
   AdminStats,
   AdminStudentData,
   AdminCohortData
 } from '@/lib/supabase';
+import { getCourses } from '@/lib/api';
+import { Course } from '@/types/course';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -61,6 +64,15 @@ export default function AdminDashboard() {
   // Status message states
   const [msg, setMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
+  // Course Management States
+  const [allCourses, setAllCourses] = useState<Course[]>([]);
+  const [selectedCourseId, setSelectedCourseId] = useState<number>(1);
+  const [coursePrice, setCoursePrice] = useState<string>('');
+  const [courseImage, setCourseImage] = useState<string>('');
+  const [courseVideoUrl, setCourseVideoUrl] = useState<string>('');
+  const [courseDescription, setCourseDescription] = useState<string>('');
+  const [savingCourse, setSavingCourse] = useState<boolean>(false);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const userSession = localStorage.getItem('currentUser');
@@ -84,18 +96,70 @@ export default function AdminDashboard() {
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      const [sData, stData, cData] = await Promise.all([
+      const [sData, stData, cData, listCourses] = await Promise.all([
         getAdminStats(),
         getAdminStudents(),
-        getAdminCohorts()
+        getAdminCohorts(),
+        getCourses()
       ]);
       setStats(sData);
       setStudents(stData);
       setCohorts(cData);
+      setAllCourses(listCourses);
+
+      // Save courses list to mock storage if not already there (mock mode initialization)
+      if (typeof window !== 'undefined' && !localStorage.getItem('gisek_courses_mock')) {
+        localStorage.setItem('gisek_courses_mock', JSON.stringify(listCourses));
+      }
+
+      // Populate course inputs with default selected course (ID 1)
+      const defaultCourse = listCourses.find(c => c.id === 1);
+      if (defaultCourse) {
+        setCoursePrice(defaultCourse.price);
+        setCourseImage(defaultCourse.image || '');
+        setCourseVideoUrl(defaultCourse.videoUrl || '');
+        setCourseDescription(defaultCourse.description || '');
+      }
     } catch (err) {
       console.error('Failed to load admin data:', err);
     }
     setLoading(false);
+  };
+
+  const handleSelectCourse = (id: number) => {
+    setSelectedCourseId(id);
+    const matched = allCourses.find(c => c.id === id);
+    if (matched) {
+      setCoursePrice(matched.price);
+      setCourseImage(matched.image || '');
+      setCourseVideoUrl(matched.videoUrl || '');
+      setCourseDescription(matched.description || '');
+    }
+  };
+
+  const handleUpdateCourseDetails = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingCourse(true);
+    setMsg(null);
+    
+    const res = await updateCourseDetails(
+      selectedCourseId,
+      courseVideoUrl,
+      courseImage,
+      coursePrice,
+      courseDescription
+    );
+    
+    if (res.success) {
+      setMsg({ type: 'success', text: 'Course configuration saved successfully!' });
+      
+      // Refresh the courses list in the state
+      const updatedCourses = await getCourses();
+      setAllCourses(updatedCourses);
+    } else {
+      setMsg({ type: 'error', text: res.error || 'Failed to save course settings.' });
+    }
+    setSavingCourse(false);
   };
 
   const handleCreateCohort = async (e: React.FormEvent) => {
@@ -532,6 +596,12 @@ export default function AdminDashboard() {
           >
             Staff Onboarding
           </button>
+          <button 
+            className={`admin-tab-btn ${activeTab === 'courses' ? 'active' : ''}`}
+            onClick={() => { setActiveTab('courses'); setMsg(null); }}
+          >
+            Course Settings
+          </button>
         </section>
 
         {/* Tab 1: Overview and details guide */}
@@ -789,6 +859,129 @@ export default function AdminDashboard() {
                   <p style={{ fontSize: '0.85rem', color: '#94a3b8', margin: 0 }}>
                     * Example: For <code>sarah@gisec.africa</code>, the default password is: <code>GisecStaff@sarah!</code>
                   </p>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Tab 5: Course Settings and Video Editor */}
+        {activeTab === 'courses' && (
+          <section>
+            <div className="row">
+              <div className="col-lg-5 col-md-12">
+                <div className="form-pane">
+                  <h3 className="form-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <BookOpen size={18} style={{ color: '#01e6f8' }} /> Configure Course Media
+                  </h3>
+                  <form onSubmit={handleUpdateCourseDetails}>
+                    <div className="input-group">
+                      <label>Select Course Track</label>
+                      <select 
+                        value={selectedCourseId} 
+                        onChange={(e) => handleSelectCourse(parseInt(e.target.value))}
+                      >
+                        {coursesList.map(c => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="input-group">
+                      <label>Program Tuition Price</label>
+                      <input 
+                        type="text" 
+                        value={coursePrice}
+                        onChange={(e) => setCoursePrice(e.target.value)}
+                        placeholder="e.g. ₦15,000"
+                        required 
+                      />
+                    </div>
+
+                    <div className="input-group">
+                      <label>Cover Image URL / Asset Path</label>
+                      <input 
+                        type="text" 
+                        value={courseImage}
+                        onChange={(e) => setCourseImage(e.target.value)}
+                        placeholder="e.g. /images/courses/software.png"
+                        required 
+                      />
+                    </div>
+
+                    <div className="input-group">
+                      <label>Course Preview Video URL</label>
+                      <input 
+                        type="url" 
+                        value={courseVideoUrl}
+                        onChange={(e) => setCourseVideoUrl(e.target.value)}
+                        placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                        required 
+                      />
+                    </div>
+
+                    <div className="input-group">
+                      <label>Course Syllabus Description</label>
+                      <textarea 
+                        rows={4}
+                        value={courseDescription}
+                        onChange={(e) => setCourseDescription(e.target.value)}
+                        placeholder="Write dynamic course overview and objectives..."
+                        required 
+                        style={{
+                          background: '#1e293b',
+                          border: '1.5px solid rgba(255,255,255,0.08)',
+                          borderRadius: '8px',
+                          padding: '10px 14px',
+                          color: '#fff',
+                          outline: 'none',
+                          fontSize: '0.92rem',
+                          height: '100px',
+                          resize: 'vertical'
+                        }}
+                      />
+                    </div>
+
+                    <button type="submit" disabled={savingCourse} className="btn-submit" style={{ width: '100%', marginTop: '10px' }}>
+                      {savingCourse ? <Loader2 className="animate-spin" size={16} /> : 'Save Course Details'}
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              {/* Course Roster / Quick Preview Pane */}
+              <div className="col-lg-7 col-md-12">
+                <div className="data-table-wrap">
+                  <div style={{ padding: '20px 20px 0 20px', borderBottom: '1.5px solid rgba(255,255,255,0.06)' }}>
+                    <h4 style={{ margin: '0 0 15px 0', fontSize: '1.1rem', color: '#fff', fontWeight: 700 }}>Active Course Inventory Roster</h4>
+                  </div>
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Track Name</th>
+                        <th>Price</th>
+                        <th>Preview Media Video URL</th>
+                        <th>Cover Asset</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allCourses.map((c) => (
+                        <tr key={c.id} style={{ cursor: 'pointer', background: selectedCourseId === c.id ? 'rgba(1, 230, 248, 0.05)' : 'transparent' }} onClick={() => handleSelectCourse(c.id)}>
+                          <td>
+                            <div style={{ fontWeight: 700, color: '#fff' }}>{c.name}</div>
+                            <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '2px' }}>Level: {c.level}</div>
+                          </td>
+                          <td style={{ fontWeight: 700, color: '#01e6f8' }}>{c.price}</td>
+                          <td style={{ fontSize: '0.8rem', color: '#94a3b8', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={c.videoUrl}>
+                            {c.videoUrl || 'None Configured'}
+                          </td>
+                          <td style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                            {c.image ? c.image.substring(c.image.lastIndexOf('/') + 1) : 'None'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>

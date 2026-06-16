@@ -53,11 +53,19 @@ export async function getCourses(): Promise<Course[]> {
         rating: Number(c.rating || 4.5),
         featured: c.featured,
         image: c.image,
+        videoUrl: c.video_url,
         description: c.description,
         whatYouLearn: c.what_you_learn || []
       }));
     } catch (err) {
       console.error('Database course fetch failed. Falling back to local courses.json', err);
+    }
+  }
+  
+  if (typeof window !== 'undefined') {
+    const cached = localStorage.getItem('gisek_courses_mock');
+    if (cached) {
+      return JSON.parse(cached) as Course[];
     }
   }
   
@@ -83,6 +91,7 @@ export async function getCourseById(id: number): Promise<Course | null> {
           rating: Number(c.rating || 4.5),
           featured: c.featured,
           image: c.image,
+          videoUrl: c.video_url,
           description: c.description,
           whatYouLearn: c.what_you_learn || [],
           weeks: dbWeeks.map(w => ({

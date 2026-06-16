@@ -37,6 +37,24 @@ export default function CourseDetail({ params }: PageProps) {
   const [course, setCourse] = useState<Course | null>(null);
   const [expandedWeeks, setExpandedWeeks] = useState<Record<number, boolean>>({ 0: true }); // first week open by default
   const [loading, setLoading] = useState<boolean>(true);
+  const [showVideo, setShowVideo] = useState<boolean>(false);
+
+  const formatYoutubeUrl = (url: string): string => {
+    try {
+      let videoId = '';
+      if (url.includes('youtube.com/watch')) {
+        const urlParams = new URLSearchParams(new URL(url).search);
+        videoId = urlParams.get('v') || '';
+      } else if (url.includes('youtu.be/')) {
+        videoId = url.split('youtu.be/')[1].split('?')[0];
+      } else if (url.includes('youtube.com/embed/')) {
+        return url;
+      }
+      return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : url;
+    } catch (e) {
+      return url;
+    }
+  };
 
   useEffect(() => {
     const courseId = parseInt(params.id);
@@ -517,21 +535,54 @@ export default function CourseDetail({ params }: PageProps) {
             <div className="spec-sidebar-card">
               
               {/* Media Preview cover */}
-              <div className="sidebar-video-placeholder">
-                <img 
-                  src={course.image || '/images/courses/pm.png'} 
-                  alt={course.name} 
-                  className="sidebar-video-img"
-                />
-                <div className="sidebar-video-overlay">
-                  <div className="play-circle">
-                    <Play size={20} fill="#1d3ede" />
-                  </div>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                    Path Preview
-                  </span>
+              {showVideo && course.videoUrl ? (
+                <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#000', borderRadius: '12px 12px 0 0', overflow: 'hidden' }}>
+                  {course.videoUrl.includes('youtube.com') || course.videoUrl.includes('youtu.be') ? (
+                    <iframe 
+                      src={formatYoutubeUrl(course.videoUrl)}
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  ) : (
+                    <video 
+                      src={course.videoUrl} 
+                      controls 
+                      autoPlay
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                    ></video>
+                  )}
+                  <button 
+                    type="button"
+                    onClick={() => setShowVideo(false)}
+                    style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.6)', border: 'none', color: '#fff', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    ✕
+                  </button>
                 </div>
-              </div>
+              ) : (
+                <div 
+                  onClick={() => course.videoUrl && setShowVideo(true)} 
+                  className="sidebar-video-placeholder" 
+                  style={{ cursor: course.videoUrl ? 'pointer' : 'default' }}
+                >
+                  <img 
+                    src={course.image || '/images/courses/pm.png'} 
+                    alt={course.name} 
+                    className="sidebar-video-img"
+                  />
+                  {course.videoUrl && (
+                    <div className="sidebar-video-overlay">
+                      <div className="play-circle">
+                        <Play size={20} fill="#1d3ede" />
+                      </div>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                        Play Preview
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Price Details */}
               <div style={{ padding: '25px' }}>

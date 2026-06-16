@@ -1023,3 +1023,42 @@ export async function enrollInCourse(
     return { success: false, error: 'User profile not found in local records' };
   }
 }
+
+/**
+ * Update course preview video, price, description, and cover image
+ */
+export async function updateCourseDetails(
+  courseId: number,
+  videoUrl: string,
+  image?: string,
+  price?: string,
+  description?: string
+): Promise<{ success: boolean; error?: string }> {
+  if (isLiveDb()) {
+    try {
+      await fetchSupabaseRest('courses', 'PATCH', `?id=eq.${courseId}`, {
+        video_url: videoUrl,
+        ...(image ? { image } : {}),
+        ...(price ? { price } : {}),
+        ...(description ? { description } : {})
+      });
+      return { success: true };
+    } catch (err: any) {
+      console.error('Supabase course patch error:', err);
+      return { success: false, error: err.message || 'Failed to update course details' };
+    }
+  } else {
+    // LocalStorage Mock
+    const courses = getLocalStorageItem<any[]>('gisek_courses_mock', []);
+    const idx = courses.findIndex(c => c.id === courseId);
+    if (idx >= 0) {
+      courses[idx].videoUrl = videoUrl;
+      if (image) courses[idx].image = image;
+      if (price) courses[idx].price = price;
+      if (description) courses[idx].description = description;
+      setLocalStorageItem('gisek_courses_mock', courses);
+      return { success: true };
+    }
+    return { success: false, error: 'Course not found in mock storage.' };
+  }
+}
