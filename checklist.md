@@ -32,10 +32,10 @@ TRACKS
 
 COHORT MANAGEMENT
 
-☐ Student registration
-☐ Student onboarding
-☐ Cohort assignment
-☐ Cohort management
+☑ Student registration
+☑ Student onboarding
+☑ Cohort assignment
+☑ Cohort management
 
 STUDENT PORTAL
 
@@ -48,17 +48,17 @@ STUDENT PORTAL
 
 PAYMENT SYSTEM
 
-☐ Payment page
-☐ Payment integration
-☐ Payment verification
-☐ Enrollment confirmation
+☑ Payment page
+☑ Payment integration
+☑ Payment verification
+☑ Enrollment confirmation
 
 ACCESS CONTROL
 
-☐ Restrict access to paying students
-☐ Prevent account sharing
-☐ Non-transferable student access
-☐ Authentication system
+☑ Restrict access to paying students
+☑ Prevent account sharing
+☑ Non-transferable student access
+☑ Authentication system
 
 LEARNING MANAGEMENT
 
@@ -75,10 +75,10 @@ PROJECTS
 
 TUTOR MANAGEMENT
 
-☐ Tutor onboarding
-☐ Tutor dashboard
+☑ Tutor onboarding
+☑ Tutor dashboard
 ☐ Course assignment
-☐ Student monitoring
+☑ Student monitoring
 
 PROJECT MANAGEMENT
 

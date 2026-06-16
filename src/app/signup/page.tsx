@@ -4,7 +4,7 @@ import React, { useEffect, useState, ChangeEvent, FormEvent } from 'react';
 import Link from 'next/link';
 import { getCourses } from '@/lib/api';
 import { Course } from '@/types/course';
-import { Clock, CreditCard, CheckCircle, ArrowLeft, Mail, Phone, User, Globe } from 'lucide-react';
+import { Clock, CreditCard, CheckCircle, ArrowLeft, Mail, Phone, User, Globe, ChevronDown } from 'lucide-react';
 import { signUpUser } from '@/lib/supabase';
 import { Instagram, Linkedin } from '@/components/icons';
 
@@ -22,6 +22,21 @@ export default function Signup() {
   const [receiptName, setReceiptName] = useState<string>('pending');
   const [paymentMethod, setPaymentMethod] = useState<'bank' | 'online'>('bank');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<any | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const userSession = localStorage.getItem('currentUser');
+      if (userSession) {
+        try {
+          setCurrentUser(JSON.parse(userSession));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -43,23 +58,15 @@ export default function Signup() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!selectedCourse) {
-      alert('Please select a course first!');
-      if (typeof window !== 'undefined') {
-        window.location.href = '/courses';
-      }
-      return;
-    }
-
     setIsSubmitting(true);
 
     const result = await signUpUser(
       email,
       fullName,
       phone,
-      selectedCourse.id,
-      selectedCourse.name,
-      paymentMethod === 'online' ? 'online_payment' : receiptName
+      selectedCourse ? selectedCourse.id : null,
+      selectedCourse ? selectedCourse.name : null,
+      selectedCourse ? (paymentMethod === 'online' ? 'online_payment' : receiptName) : null
     );
 
     if (result.success && result.session) {
@@ -74,32 +81,37 @@ export default function Signup() {
         }));
         document.cookie = `gisec_session_token=${result.session.id}; path=/; max-age=86400; SameSite=Lax`;
         
-        if (paymentMethod === 'online') {
-          try {
-            const amount = courseDetails ? parseInt(courseDetails.price.replace(/[^\d]/g, '')) : 0;
-            const payRes = await fetch('/api/pay', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                email,
-                amount,
-                courseId: selectedCourse.id
-              })
-            });
+        if (selectedCourse) {
+          if (paymentMethod === 'online') {
+            try {
+              const amount = courseDetails ? parseInt(courseDetails.price.replace(/[^\d]/g, '')) : 0;
+              const payRes = await fetch('/api/pay', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  email,
+                  amount,
+                  courseId: selectedCourse.id
+                })
+              });
 
-            const payData = await payRes.json();
-            if (payData.success && payData.authorization_url) {
-              window.location.href = payData.authorization_url;
-              return;
-            } else {
-              throw new Error(payData.error || 'Failed to initialize payment gateway');
+              const payData = await payRes.json();
+              if (payData.success && payData.authorization_url) {
+                window.location.href = payData.authorization_url;
+                return;
+              } else {
+                throw new Error(payData.error || 'Failed to initialize payment gateway');
+              }
+            } catch (err: any) {
+              alert(`Account registered, but online gateway failed: ${err.message}. You can pay via bank transfer inside your dashboard.`);
+              window.location.href = '/dashboard';
             }
-          } catch (err: any) {
-            alert(`Account registered, but online gateway failed: ${err.message}. You can pay via bank transfer inside your dashboard.`);
+          } else {
+            alert('✅ Registration submitted! Your account will be activated once payment is verified.');
             window.location.href = '/dashboard';
           }
         } else {
-          alert('✅ Registration submitted! Your account will be activated once payment is verified.');
+          alert('✅ Account registered successfully! Welcome to GISEC Technologies.');
           window.location.href = '/dashboard';
         }
       }
@@ -242,8 +254,96 @@ export default function Signup() {
               <li className="nav-item"><Link className="nav-link" href="/courses">Courses</Link></li>
               <li className="nav-item"><Link className="nav-link" href="/#contact">Contact</Link></li>
             </ul>
-            <form className="form-inline my-2 my-lg-0">
-              <Link href="/login" className="btn btn-outline-primary my-2 my-sm-0 mr-3 text-uppercase" style={{ color: '#1d3ede', border: '3px solid #1d3ede' }}>Login</Link>
+            <form className="form-inline my-2 my-lg-0" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              {currentUser ? (
+                <Link 
+                  href="/dashboard" 
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    width: '40px', 
+                    height: '40px', 
+                    borderRadius: '50%', 
+                    background: '#1d3ede', 
+                    color: '#ffffff', 
+                    textDecoration: 'none', 
+                    fontWeight: 700, 
+                    fontSize: '0.9rem', 
+                    border: '2px solid #ffffff', 
+                    boxShadow: '0 2px 8px rgba(29,62,222,0.25)' 
+                  }} 
+                  title="Go to Dashboard"
+                >
+                  {currentUser.name ? currentUser.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : 'U'}
+                </Link>
+              ) : (
+                <div style={{ position: 'relative' }}>
+                  <button 
+                    type="button"
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="btn btn-outline-primary dropdown-toggle my-2 my-sm-0 mr-3 text-uppercase"
+                    style={{ 
+                      color: '#1d3ede', 
+                      border: '3px solid #1d3ede', 
+                      background: 'transparent', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '8px', 
+                      fontWeight: 700, 
+                      padding: '8px 16px', 
+                      borderRadius: '8px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <User size={16} /> Account <ChevronDown size={14} />
+                  </button>
+                  {dropdownOpen && (
+                    <div style={{ 
+                      position: 'absolute', 
+                      top: '100%', 
+                      right: 15, 
+                      background: '#ffffff', 
+                      border: '1px solid #e2e8f0', 
+                      borderRadius: '8px', 
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)', 
+                      padding: '8px 0', 
+                      zIndex: 1000, 
+                      minWidth: '130px', 
+                      marginTop: '8px' 
+                    }}>
+                      <Link 
+                        href="/login" 
+                        onClick={() => setDropdownOpen(false)} 
+                        style={{ 
+                          display: 'block', 
+                          padding: '8px 16px', 
+                          color: '#334155', 
+                          textDecoration: 'none', 
+                          fontSize: '0.9rem', 
+                          fontWeight: 600 
+                        }}
+                      >
+                        Login
+                      </Link>
+                      <Link 
+                        href="/signup" 
+                        onClick={() => setDropdownOpen(false)} 
+                        style={{ 
+                          display: 'block', 
+                          padding: '8px 16px', 
+                          color: '#334155', 
+                          textDecoration: 'none', 
+                          fontSize: '0.9rem', 
+                          fontWeight: 600 
+                        }}
+                      >
+                        Signup
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
               <a href="https://bit.ly/gisecinterestform" className="btn btn-info my-2 my-sm-0 text-uppercase">Partnership</a>
             </form>
           </div>
@@ -275,7 +375,7 @@ export default function Signup() {
             Enrollment Details
           </h3>
 
-          <div className="selected-course-info">
+          <div className="selected-course-info" style={{ background: courseDetails ? '#f1f5f9' : '#ecfdf5', borderColor: courseDetails ? '#e2e8f0' : '#a7f3d0' }}>
             {courseDetails ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.95rem', color: '#334155' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -292,9 +392,13 @@ export default function Signup() {
                 </div>
               </div>
             ) : (
-              <p style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                No course selected. <Link href="/courses" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#1d3ede' }}><ArrowLeft size={14} /> View Course paths</Link>
-              </p>
+              <div style={{ color: '#065f46', fontSize: '0.92rem', lineHeight: 1.5 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, marginBottom: '4px' }}>
+                  <CheckCircle size={16} style={{ color: '#10b981' }} />
+                  <span>General Registration</span>
+                </div>
+                You are registering a general account without selecting a course pathway. You can select and enroll in any of the 6 course tracks later from your student dashboard.
+              </div>
             )}
           </div>
 
@@ -341,68 +445,72 @@ export default function Signup() {
               </div>
             </div>
 
-            <div className="form-group">
-              <label>Payment Mode</label>
-              <div style={{ display: 'flex', gap: '15px', marginTop: '6px' }}>
-                <button 
-                  type="button" 
-                  onClick={() => setPaymentMethod('bank')} 
-                  className="payment-method-btn"
-                  style={{
-                    border: paymentMethod === 'bank' ? '2.5px solid #1d3ede' : '1.5px solid #cbd5e1',
-                    background: paymentMethod === 'bank' ? 'rgba(29, 62, 222, 0.05)' : '#ffffff',
-                    color: paymentMethod === 'bank' ? '#1d3ede' : '#475569'
-                  }}
-                >
-                  Bank Transfer
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => setPaymentMethod('online')} 
-                  className="payment-method-btn"
-                  style={{
-                    border: paymentMethod === 'online' ? '2.5px solid #1d3ede' : '1.5px solid #cbd5e1',
-                    background: paymentMethod === 'online' ? 'rgba(29, 62, 222, 0.05)' : '#ffffff',
-                    color: paymentMethod === 'online' ? '#1d3ede' : '#475569'
-                  }}
-                >
-                  Online checkout (Instant)
-                </button>
-              </div>
-            </div>
-
-            {paymentMethod === 'bank' ? (
+            {selectedCourse && (
               <>
-                <div className="payment-details-pane">
-                  <h4 style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '1.05rem', margin: '0 0 10px 0', color: '#b45309', fontWeight: 700 }}>
-                    <CreditCard size={18} /> Bank Details
-                  </h4>
-                  <p style={{ margin: '5px 0' }}>Transfer the amount to:</p>
-                  <p style={{ margin: '3px 0' }}><strong>Bank:</strong> GTBank</p>
-                  <p style={{ margin: '3px 0' }}><strong>Account Name:</strong> GISEK Technologies</p>
-                  <p style={{ margin: '3px 0' }}><strong>Account Number:</strong> 0123456789</p>
-                  <p style={{ margin: '8px 0 0 0', fontSize: '0.85rem' }}><small>Upload your receipt proof below. Enrollment is verified in 24 hours.</small></p>
+                <div className="form-group">
+                  <label>Payment Mode</label>
+                  <div style={{ display: 'flex', gap: '15px', marginTop: '6px' }}>
+                    <button 
+                      type="button" 
+                      onClick={() => setPaymentMethod('bank')} 
+                      className="payment-method-btn"
+                      style={{
+                        border: paymentMethod === 'bank' ? '2.5px solid #1d3ede' : '1.5px solid #cbd5e1',
+                        background: paymentMethod === 'bank' ? 'rgba(29, 62, 222, 0.05)' : '#ffffff',
+                        color: paymentMethod === 'bank' ? '#1d3ede' : '#475569'
+                      }}
+                    >
+                      Bank Transfer
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setPaymentMethod('online')} 
+                      className="payment-method-btn"
+                      style={{
+                        border: paymentMethod === 'online' ? '2.5px solid #1d3ede' : '1.5px solid #cbd5e1',
+                        background: paymentMethod === 'online' ? 'rgba(29, 62, 222, 0.05)' : '#ffffff',
+                        color: paymentMethod === 'online' ? '#1d3ede' : '#475569'
+                      }}
+                    >
+                      Online checkout (Instant)
+                    </button>
+                  </div>
                 </div>
 
-                <div className="form-group">
-                  <label>Upload Payment Receipt</label>
-                  <input 
-                    type="file" 
-                    onChange={handleFileChange}
-                    accept="image/*,.pdf" 
-                    required={paymentMethod === 'bank'}
-                    style={{ padding: '8px' }}
-                  />
-                </div>
+                {paymentMethod === 'bank' ? (
+                  <>
+                    <div className="payment-details-pane">
+                      <h4 style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '1.05rem', margin: '0 0 10px 0', color: '#b45309', fontWeight: 700 }}>
+                        <CreditCard size={18} /> Bank Details
+                      </h4>
+                      <p style={{ margin: '5px 0' }}>Transfer the amount to:</p>
+                      <p style={{ margin: '3px 0' }}><strong>Bank:</strong> GTBank</p>
+                      <p style={{ margin: '3px 0' }}><strong>Account Name:</strong> GISEK Technologies</p>
+                      <p style={{ margin: '3px 0' }}><strong>Account Number:</strong> 0123456789</p>
+                      <p style={{ margin: '8px 0 0 0', fontSize: '0.85rem' }}><small>Upload your receipt proof below. Enrollment is verified in 24 hours.</small></p>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Upload Payment Receipt</label>
+                      <input 
+                        type="file" 
+                        onChange={handleFileChange}
+                        accept="image/*,.pdf" 
+                        required={paymentMethod === 'bank'}
+                        style={{ padding: '8px' }}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ padding: '20px', background: '#ecfdf5', borderRadius: '12px', border: '1px solid #10b981', color: '#065f46', marginBottom: '25px', fontSize: '0.92rem', lineHeight: 1.5 }}>
+                    You will be redirected securely to the online payment gateway (Paystack) to process payment of <strong>{courseDetails ? courseDetails.price : '₦0'}</strong>. Your pathway access will be activated immediately!
+                  </div>
+                )}
               </>
-            ) : (
-              <div style={{ padding: '20px', background: '#ecfdf5', borderRadius: '12px', border: '1px solid #10b981', color: '#065f46', marginBottom: '25px', fontSize: '0.92rem', lineHeight: 1.5 }}>
-                You will be redirected securely to the online payment gateway (Paystack) to process payment of <strong>{courseDetails ? courseDetails.price : '₦0'}</strong>. Your pathway access will be activated immediately!
-              </div>
             )}
 
             <button type="submit" disabled={isSubmitting} className="btn-submit">
-              {isSubmitting ? 'Processing...' : paymentMethod === 'online' ? 'Pay & Complete Enrollment' : 'Submit Registration'}
+              {isSubmitting ? 'Processing...' : selectedCourse ? (paymentMethod === 'online' ? 'Pay & Complete Enrollment' : 'Submit Registration') : 'Complete Registration'}
             </button>
           </form>
           

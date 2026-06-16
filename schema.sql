@@ -28,6 +28,7 @@ create table if not exists courses (
     level text not null,
     description text,
     image text,
+    video_url text,
     what_you_learn text[] default '{}'::text[] not null,
     rating numeric(3, 2) default 4.50,
     students_count integer default 0,
@@ -117,3 +118,6 @@ create index if not exists idx_enrollments_user_id on enrollments(user_id);
 create index if not exists idx_student_progress_user_course on student_progress(user_id, course_id);
 create index if not exists idx_submissions_user_course_week on submissions(user_id, course_id, week_number);
 create index if not exists idx_live_classes_cohort_time on live_classes(cohort_id, schedule_time);
+
+-- Migration updates
+alter table courses add column if not exists video_url text;

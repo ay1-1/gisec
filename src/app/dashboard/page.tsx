@@ -18,7 +18,8 @@ import {
   Award,
   Calendar,
   AlertCircle,
-  User
+  User,
+  X
 } from 'lucide-react';
 import { 
   validateSession, 
@@ -28,6 +29,7 @@ import {
   getAllSubmissions, 
   gradeSubmission,
   updateUserProfile,
+  enrollInCourse,
   SubmissionData 
 } from '@/lib/supabase';
 
@@ -73,6 +75,13 @@ export default function Dashboard() {
   const [gradeScore, setGradeScore] = useState<number>(100);
   const [tutorFeedback, setTutorFeedback] = useState<string>('');
   const [gradingProgress, setGradingProgress] = useState<boolean>(false);
+
+  // Course Catalog & In-Dashboard Checkout States
+  const [coursesList, setCoursesList] = useState<Course[]>([]);
+  const [enrollingCourse, setEnrollingCourse] = useState<Course | null>(null);
+  const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState<'bank' | 'online'>('bank');
+  const [checkoutReceiptName, setCheckoutReceiptName] = useState<string>('pending');
+  const [checkoutSubmitting, setCheckoutSubmitting] = useState<boolean>(false);
 
   const logout = () => {
     if (typeof window !== 'undefined') {
@@ -121,16 +130,19 @@ export default function Dashboard() {
 
       // Find matching course dynamically via API client
       getCourses().then((data) => {
-        const matchedCourse = data.find(c => 
-          c.name.toLowerCase().includes(user.course?.toLowerCase() || '')
-        );
-        if (matchedCourse) {
-          setCourse(matchedCourse);
-          
-          // Fetch student submissions
-          getSubmissions(user.id || 'mock-id', matchedCourse.id).then(subs => {
-            setSubmissions(subs);
-          });
+        setCoursesList(data);
+        if (user.course) {
+          const matchedCourse = data.find(c => 
+            c.name.toLowerCase().includes(user.course?.toLowerCase() || '')
+          );
+          if (matchedCourse) {
+            setCourse(matchedCourse);
+            
+            // Fetch student submissions
+            getSubmissions(user.id || 'mock-id', matchedCourse.id).then(subs => {
+              setSubmissions(subs);
+            });
+          }
         }
         
         // Fetch Live classes
@@ -238,6 +250,62 @@ export default function Dashboard() {
       alert(`Grading failed: ${res.error}`);
     }
     setGradingProgress(false);
+  };
+
+  const handleInDashboardEnrollment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser || !enrollingCourse) return;
+
+    setCheckoutSubmitting(true);
+
+    const res = await enrollInCourse(
+      currentUser.id || 'mock-id',
+      enrollingCourse.id,
+      enrollingCourse.name,
+      checkoutPaymentMethod,
+      checkoutPaymentMethod === 'online' ? 'online_payment' : checkoutReceiptName
+    );
+
+    if (res.success) {
+      if (checkoutPaymentMethod === 'online') {
+        try {
+          const amount = parseInt(enrollingCourse.price.replace(/[^\d]/g, ''));
+          const payRes = await fetch('/api/pay', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: currentUser.email,
+              amount,
+              courseId: enrollingCourse.id
+            })
+          });
+
+          const payData = await payRes.json();
+          if (payData.success && payData.authorization_url) {
+            window.location.href = payData.authorization_url;
+            return;
+          } else {
+            throw new Error(payData.error || 'Failed to initialize payment gateway');
+          }
+        } catch (err: any) {
+          alert(`Enrolled, but online gateway failed: ${err.message}. You can pay via bank transfer inside your dashboard.`);
+          window.location.reload();
+        }
+      } else {
+        alert('✅ Enrollment request submitted successfully! Your course pathway will activate once payment is verified.');
+        window.location.reload();
+      }
+    } else {
+      alert(res.error || 'Failed to complete enrollment. Please try again.');
+    }
+    setCheckoutSubmitting(false);
+  };
+
+  const handleCheckoutFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCheckoutReceiptName(file.name);
+    }
   };
 
   if (loading) {
@@ -439,12 +507,131 @@ export default function Dashboard() {
           padding: 20px;
           margin-bottom: 15px;
         }
+
+        /* Course Catalog CSS */
+        .catalog-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 20px;
+          margin-top: 20px;
+        }
+        .catalog-card {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+          transition: transform 0.25s, box-shadow 0.25s;
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+        }
+        .catalog-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 10px 25px rgba(29, 62, 222, 0.06);
+        }
+        .catalog-card-image {
+          height: 150px;
+          background: #e2e8f0;
+          position: relative;
+        }
+        .catalog-card-image img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .catalog-card-badge {
+          position: absolute;
+          top: 12px;
+          right: 12px;
+          background: #0ea5e9;
+          color: white;
+          padding: 3px 8px;
+          border-radius: 20px;
+          font-size: 0.72rem;
+          font-weight: 700;
+          text-transform: uppercase;
+        }
+        .catalog-card-content {
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+        }
+        .catalog-card-title {
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: #0f172a;
+          margin: 0 0 8px 0;
+        }
+        .catalog-card-desc {
+          font-size: 0.88rem;
+          color: #64748b;
+          line-height: 1.5;
+          margin-bottom: 15px;
+          flex: 1;
+        }
+        .catalog-card-meta {
+          display: flex;
+          justify-content: space-between;
+          font-size: 0.8rem;
+          color: #475569;
+          border-top: 1px dashed #e2e8f0;
+          padding-top: 12px;
+          margin-bottom: 15px;
+        }
+        .catalog-card-price {
+          font-size: 1.2rem;
+          font-weight: 800;
+          color: #1d3ede;
+        }
+        .btn-catalog-enroll {
+          width: 100%;
+          background: linear-gradient(135deg, #1d3ede 0%, #0a7ec0 100%);
+          color: white;
+          border: none;
+          padding: 10px;
+          border-radius: 8px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: opacity 0.2s;
+          text-align: center;
+        }
+        .btn-catalog-enroll:hover {
+          opacity: 0.95;
+        }
+        
+        /* Modal Overlay CSS */
+        .checkout-overlay {
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(15, 23, 42, 0.65);
+          backdrop-filter: blur(4px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          padding: 20px;
+        }
+        .checkout-modal {
+          background: white;
+          border-radius: 16px;
+          max-width: 500px;
+          width: 100%;
+          padding: 30px;
+          box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+          max-height: 90vh;
+          overflow-y: auto;
+        }
       `}</style>
 
       <div className="dashboard-container">
         <div className="nav-links" style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
           <Link href="/courses" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><ArrowLeft size={16} /> Browse Courses</Link>
           <Link href="/">Home</Link>
+          {currentUser?.role === 'admin' && (
+            <Link href="/admin" style={{ color: '#01e6f8', fontWeight: 600 }}>Admin Panel</Link>
+          )}
           <span onClick={logout} className="logout">Logout</span>
         </div>
         
@@ -454,10 +641,10 @@ export default function Dashboard() {
           <p>
             {isTutorOrAdmin 
               ? `Staff Account - Access Level: ${currentUser?.role?.toUpperCase()}`
-              : `Course Path: ${course ? course.name : 'Loading...'}`
+              : `Course Path: ${course ? course.name : 'General Member (Unenrolled)'}`
             }
           </p>
-          {!isTutorOrAdmin && (
+          {!isTutorOrAdmin && course && (
             <>
               <div className="progress-bar-container">
                 <div className="progress-fill" style={{ width: `${percent}%` }}></div>
@@ -470,17 +657,23 @@ export default function Dashboard() {
         {/* Tab Selection */}
         <div className="tabs-header">
           {!isTutorOrAdmin ? (
-            <>
-              <button onClick={() => setActiveTab('curriculum')} className={`tab-btn ${activeTab === 'curriculum' ? 'active' : ''}`}>
-                <BookOpen size={18} /> Curriculum
+            course ? (
+              <>
+                <button onClick={() => setActiveTab('curriculum')} className={`tab-btn ${activeTab === 'curriculum' ? 'active' : ''}`}>
+                  <BookOpen size={18} /> Curriculum
+                </button>
+                <button onClick={() => setActiveTab('live')} className={`tab-btn ${activeTab === 'live' ? 'active' : ''}`}>
+                  <Video size={18} /> Live Classes ({liveClasses.length})
+                </button>
+                <button onClick={() => setActiveTab('submissions')} className={`tab-btn ${activeTab === 'submissions' ? 'active' : ''}`}>
+                  <UploadCloud size={18} /> Projects Submission
+                </button>
+              </>
+            ) : (
+              <button className="tab-btn active">
+                <BookOpen size={18} /> Course Catalog
               </button>
-              <button onClick={() => setActiveTab('live')} className={`tab-btn ${activeTab === 'live' ? 'active' : ''}`}>
-                <Video size={18} /> Live Classes ({liveClasses.length})
-              </button>
-              <button onClick={() => setActiveTab('submissions')} className={`tab-btn ${activeTab === 'submissions' ? 'active' : ''}`}>
-                <UploadCloud size={18} /> Projects Submission
-              </button>
-            </>
+            )
           ) : (
             <button onClick={() => setActiveTab('tutor')} className={`tab-btn ${activeTab === 'tutor' ? 'active' : ''}`}>
               <CheckSquare size={18} /> Tutor Grading Panel ({allSubmissions.filter(s => s.gradeScore === undefined).length} pending)
@@ -496,44 +689,105 @@ export default function Dashboard() {
         {/* Tab 1: Curriculum */}
         {activeTab === 'curriculum' && (
           <div>
-            <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.5rem', color: '#1a1a2e', marginBottom: '20px' }}>
-              <BookOpen size={24} style={{ color: '#1d3ede' }} /> Weekly Curriculum
-            </h2>
-            <div className="weeks-grid">
-              {course && course.weeks ? (
-                course.weeks.map((week, index) => {
-                  const weekNum = index + 1;
-                  const isCompleted = studentProgress.completedWeeks?.includes(weekNum);
-                  const isLocked = weekNum > (studentProgress.currentWeek || 1) + 1;
+            {!course ? (
+              <div>
+                <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+                  GISEC Program Tracks
+                </h2>
+                <p style={{ color: '#64748b', fontSize: '0.98rem', marginBottom: '25px' }}>
+                  Select one of our six learning tracks to start your path. Complete enrollment to unlock weekly curriculum modules, live sessions, project submissions, and tutoring support.
+                </p>
+                
+                <div className="catalog-grid">
+                  {coursesList.map((c) => (
+                    <div key={c.id} className="catalog-card">
+                      <div className="catalog-card-image">
+                        <img src={c.image || `/statics/logo.jpg`} alt={c.name} onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/statics/logo.jpg';
+                        }} />
+                        <span className="catalog-card-badge">{c.level}</span>
+                      </div>
+                      <div className="catalog-card-content">
+                        <h3 className="catalog-card-title">{c.name}</h3>
+                        <p className="catalog-card-desc">{c.description}</p>
+                        
+                        <div style={{ marginBottom: '15px' }}>
+                          <strong style={{ fontSize: '0.82rem', color: '#475569', display: 'block', marginBottom: '6px' }}>Tools you will learn:</strong>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                            {c.tools.map((t, idx) => (
+                              <span key={idx} style={{ background: '#f1f5f9', color: '#475569', fontSize: '0.75rem', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
 
-                  return (
-                    <div key={index} className={`week-card ${isCompleted ? 'completed' : ''} ${isLocked ? 'locked' : ''}`}>
-                      <div style={{ flex: 1 }}>
-                        <h3 style={{ fontSize: '1.15rem', color: '#1a1a2e', fontWeight: 600 }}>Week {weekNum}: {week.topic}</h3>
-                        <p style={{ margin: '8px 0', color: '#4b5563', fontSize: '0.92rem' }}>{week.content}</p>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#6b7280', fontSize: '0.85rem' }}>
-                          <FileText size={14} />
-                          <span>Assignment: {week.assignment}</span>
+                        <div className="catalog-card-meta">
+                          <span>⏱ {c.duration}</span>
+                          <span>⭐ {c.rating || 4.8} / 5</span>
+                        </div>
+                        
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                          <span className="catalog-card-price">{c.price}</span>
+                          <button 
+                            onClick={() => {
+                              setEnrollingCourse(c);
+                              setCheckoutPaymentMethod('bank');
+                              setCheckoutReceiptName('pending');
+                            }} 
+                            className="btn-catalog-enroll" 
+                            style={{ width: 'auto', padding: '8px 16px' }}
+                          >
+                            Enroll & Pay
+                          </button>
                         </div>
                       </div>
-                      <div>
-                        {!isCompleted && !isLocked ? (
-                          <button onClick={() => markWeekComplete(weekNum)} className="mark-complete-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                            Mark Complete <CheckCircle size={14} />
-                          </button>
-                        ) : isCompleted ? (
-                          <div className="week-status status-completed"><CheckCircle size={18} fill="#10b981" color="#fff" /></div>
-                        ) : (
-                          <div className="week-status status-locked"><Lock size={16} /></div>
-                        )}
-                      </div>
                     </div>
-                  );
-                })
-              ) : (
-                <p>Curriculum details not loaded. Please select a course path.</p>
-              )}
-            </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.5rem', color: '#1a1a2e', marginBottom: '20px' }}>
+                  <BookOpen size={24} style={{ color: '#1d3ede' }} /> Weekly Curriculum
+                </h2>
+                <div className="weeks-grid">
+                  {course.weeks ? (
+                    course.weeks.map((week, index) => {
+                      const weekNum = index + 1;
+                      const isCompleted = studentProgress.completedWeeks?.includes(weekNum);
+                      const isLocked = weekNum > (studentProgress.currentWeek || 1) + 1;
+
+                      return (
+                        <div key={index} className={`week-card ${isCompleted ? 'completed' : ''} ${isLocked ? 'locked' : ''}`}>
+                          <div style={{ flex: 1 }}>
+                            <h3 style={{ fontSize: '1.15rem', color: '#1a1a2e', fontWeight: 600 }}>Week {weekNum}: {week.topic}</h3>
+                            <p style={{ margin: '8px 0', color: '#4b5563', fontSize: '0.92rem' }}>{week.content}</p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#6b7280', fontSize: '0.85rem' }}>
+                              <FileText size={14} />
+                              <span>Assignment: {week.assignment}</span>
+                            </div>
+                          </div>
+                          <div>
+                            {!isCompleted && !isLocked ? (
+                              <button onClick={() => markWeekComplete(weekNum)} className="mark-complete-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                Mark Complete <CheckCircle size={14} />
+                              </button>
+                            ) : isCompleted ? (
+                              <div className="week-status status-completed"><CheckCircle size={18} fill="#10b981" color="#fff" /></div>
+                            ) : (
+                              <div className="week-status status-locked"><Lock size={16} /></div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p>Curriculum details not loaded. Please select a course path.</p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -877,6 +1131,125 @@ export default function Dashboard() {
                 {isSavingProfile ? 'Saving Changes...' : 'Save Profile Details'}
               </button>
             </form>
+          </div>
+        )}
+
+        {/* Checkout Modal */}
+        {enrollingCourse && (
+          <div className="checkout-overlay">
+            <div className="checkout-modal">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #e2e8f0', paddingBottom: '15px' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
+                  Enroll in {enrollingCourse.name}
+                </h3>
+                <button 
+                  type="button"
+                  onClick={() => setEnrollingCourse(null)} 
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <div style={{ background: '#f8fafc', padding: '15px', borderRadius: '12px', marginBottom: '20px', border: '1px solid #e2e8f0', fontSize: '0.92rem', color: '#334155' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span>Program Fee:</span>
+                  <strong style={{ color: '#1d3ede', fontSize: '1.05rem' }}>{enrollingCourse.price}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Duration:</span>
+                  <strong>{enrollingCourse.duration}</strong>
+                </div>
+              </div>
+
+              <form onSubmit={handleInDashboardEnrollment}>
+                <div className="form-group" style={{ marginBottom: '20px' }}>
+                  <label style={{ fontWeight: 600, color: '#334155', display: 'block', marginBottom: '8px' }}>Payment Method</label>
+                  <div style={{ display: 'flex', gap: '15px' }}>
+                    <button 
+                      type="button" 
+                      onClick={() => setCheckoutPaymentMethod('bank')} 
+                      className="payment-method-btn"
+                      style={{
+                        border: checkoutPaymentMethod === 'bank' ? '2.5px solid #1d3ede' : '1.5px solid #cbd5e1',
+                        background: checkoutPaymentMethod === 'bank' ? 'rgba(29, 62, 222, 0.05)' : '#ffffff',
+                        color: checkoutPaymentMethod === 'bank' ? '#1d3ede' : '#475569',
+                        padding: '10px',
+                        borderRadius: '8px',
+                        flex: 1,
+                        cursor: 'pointer',
+                        fontWeight: 600
+                      }}
+                    >
+                      Bank Transfer
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setCheckoutPaymentMethod('online')} 
+                      className="payment-method-btn"
+                      style={{
+                        border: checkoutPaymentMethod === 'online' ? '2.5px solid #1d3ede' : '1.5px solid #cbd5e1',
+                        background: checkoutPaymentMethod === 'online' ? 'rgba(29, 62, 222, 0.05)' : '#ffffff',
+                        color: checkoutPaymentMethod === 'online' ? '#1d3ede' : '#475569',
+                        padding: '10px',
+                        borderRadius: '8px',
+                        flex: 1,
+                        cursor: 'pointer',
+                        fontWeight: 600
+                      }}
+                    >
+                      Online Paystack
+                    </button>
+                  </div>
+                </div>
+
+                {checkoutPaymentMethod === 'bank' ? (
+                  <>
+                    <div className="payment-details-pane" style={{ background: '#fffbeb', border: '1px solid #fef3c7', padding: '15px', borderRadius: '12px', color: '#92400e', marginBottom: '20px', fontSize: '0.88rem' }}>
+                      <p style={{ margin: '0 0 8px 0', fontWeight: 700 }}>Transfer the fee to:</p>
+                      <p style={{ margin: '3px 0' }}><strong>Bank:</strong> GTBank</p>
+                      <p style={{ margin: '3px 0' }}><strong>Account Name:</strong> GISEK Technologies</p>
+                      <p style={{ margin: '3px 0' }}><strong>Account Number:</strong> 0123456789</p>
+                      <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', opacity: 0.9 }}><small>Upload your receipt proof below. Enrollment is verified in 24 hours.</small></p>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: '25px' }}>
+                      <label style={{ fontWeight: 600, color: '#334155', display: 'block', marginBottom: '8px' }}>Upload Payment Receipt</label>
+                      <input 
+                        type="file" 
+                        onChange={handleCheckoutFileChange}
+                        accept="image/*,.pdf" 
+                        required={checkoutPaymentMethod === 'bank'}
+                        style={{ padding: '8px', border: '1.5px solid #cbd5e1', borderRadius: '8px', width: '100%', outline: 'none' }}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ padding: '15px', background: '#ecfdf5', borderRadius: '12px', border: '1px solid #10b981', color: '#065f46', marginBottom: '25px', fontSize: '0.88rem', lineHeight: 1.5 }}>
+                    You will be redirected securely to the online payment gateway (Paystack) to process payment of <strong>{enrollingCourse.price}</strong>. Your track will be activated immediately!
+                  </div>
+                )}
+
+                <button 
+                  type="submit" 
+                  disabled={checkoutSubmitting} 
+                  className="btn-submit"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    background: 'linear-gradient(135deg, #1d3ede 0%, #0a7ec0 100%)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontSize: '0.95rem'
+                  }}
+                >
+                  {checkoutSubmitting ? 'Processing...' : checkoutPaymentMethod === 'online' ? 'Pay & Enroll' : 'Submit Enrollment'}
+                </button>
+              </form>
+            </div>
           </div>
         )}
 
