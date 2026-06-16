@@ -14,7 +14,9 @@ import {
   Mail, 
   ArrowRight,
   Rocket,
-  BookOpen
+  BookOpen,
+  User,
+  ChevronDown
 } from 'lucide-react';
 import { Instagram, Linkedin } from '@/components/icons';
 
@@ -31,11 +33,26 @@ export default function Home() {
   const [activeMediaIndex, setActiveMediaIndex] = useState<number>(0);
   const [isHovered, setIsHovered] = useState<boolean>(false);
   const [featuredCourses, setFeaturedCourses] = useState<Course[]>([]);
+  const [currentUser, setCurrentUser] = useState<any | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
 
   useEffect(() => {
     getCourses().then((data) => {
       setFeaturedCourses(data.filter(c => c.featured));
     });
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const userSession = localStorage.getItem('currentUser');
+      if (userSession) {
+        try {
+          setCurrentUser(JSON.parse(userSession));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -121,8 +138,96 @@ export default function Home() {
               <li className="nav-item"><Link className="nav-link" href="/courses">Courses</Link></li>
               <li className="nav-item"><a className="nav-link" href="#contact">Contact</a></li>
             </ul>
-            <form className="form-inline my-2 my-lg-0">
-              <Link href="/login" className="btn btn-outline-primary my-2 my-sm-0 mr-3 text-uppercase" style={{ color: '#1d3ede', border: '3px solid #1d3ede' }}>Login</Link> 
+            <form className="form-inline my-2 my-lg-0" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              {currentUser ? (
+                <Link 
+                  href="/dashboard" 
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    width: '40px', 
+                    height: '40px', 
+                    borderRadius: '50%', 
+                    background: '#1d3ede', 
+                    color: '#ffffff', 
+                    textDecoration: 'none', 
+                    fontWeight: 700, 
+                    fontSize: '0.9rem', 
+                    border: '2px solid #ffffff', 
+                    boxShadow: '0 2px 8px rgba(29,62,222,0.25)' 
+                  }} 
+                  title="Go to Dashboard"
+                >
+                  {currentUser.name ? currentUser.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : 'U'}
+                </Link>
+              ) : (
+                <div style={{ position: 'relative' }}>
+                  <button 
+                    type="button"
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="btn btn-outline-primary dropdown-toggle my-2 my-sm-0 mr-3 text-uppercase"
+                    style={{ 
+                      color: '#1d3ede', 
+                      border: '3px solid #1d3ede', 
+                      background: 'transparent', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '8px', 
+                      fontWeight: 700, 
+                      padding: '8px 16px', 
+                      borderRadius: '8px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <User size={16} /> Account <ChevronDown size={14} />
+                  </button>
+                  {dropdownOpen && (
+                    <div style={{ 
+                      position: 'absolute', 
+                      top: '100%', 
+                      right: 15, 
+                      background: '#ffffff', 
+                      border: '1px solid #e2e8f0', 
+                      borderRadius: '8px', 
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)', 
+                      padding: '8px 0', 
+                      zIndex: 1000, 
+                      minWidth: '130px', 
+                      marginTop: '8px' 
+                    }}>
+                      <Link 
+                        href="/login" 
+                        onClick={() => setDropdownOpen(false)} 
+                        style={{ 
+                          display: 'block', 
+                          padding: '8px 16px', 
+                          color: '#334155', 
+                          textDecoration: 'none', 
+                          fontSize: '0.9rem', 
+                          fontWeight: 600 
+                        }}
+                      >
+                        Login
+                      </Link>
+                      <Link 
+                        href="/signup" 
+                        onClick={() => setDropdownOpen(false)} 
+                        style={{ 
+                          display: 'block', 
+                          padding: '8px 16px', 
+                          color: '#334155', 
+                          textDecoration: 'none', 
+                          fontSize: '0.9rem', 
+                          fontWeight: 600 
+                        }}
+                      >
+                        Signup
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
               <a href="https://bit.ly/gisecinterestform" className="btn btn-info my-2 my-sm-0 text-uppercase">Partnership</a>
             </form>
           </div>
