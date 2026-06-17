@@ -7,38 +7,47 @@ body{
 @font-face {
   font-family: "Lato-Regular";
   src: url(../fonts/Lato-Regular.ttf);
+  font-display: swap;
 }
 @font-face {
   font-family: "Lato-Black";
   src: url(../fonts/Lato-Black.ttf);
+  font-display: swap;
 }
 @font-face {
   font-family: "Lato-Bold";
   src: url(../fonts/Lato-Bold.ttf);
+  font-display: swap;
 }
 @font-face {
   font-family: "Lato-Light";
   src: url(../fonts/Lato-Light.ttf);
+  font-display: swap;
 }
 @font-face {
   font-family: "Lato-Medium";
   src: url(../fonts/Lato-Medium.ttf);
+  font-display: swap;
 }
 @font-face {
   font-family: "Lato-Semibold";
   src: url(../fonts/Lato-Semibold.ttf);
+  font-display: swap;
 }
 @font-face {
   font-family: "OpenSans-Bold";
   src: url(../fonts/OpenSans-Bold.ttf);
+  font-display: swap;
 }
 @font-face {
   font-family: "OpenSans-Regular";
   src: url(../fonts/OpenSans-Regular.ttf);
+  font-display: swap;
 }
 @font-face {
   font-family: "OpenSans-Semibold";
   src: url(../fonts/OpenSans-Semibold.ttf);
+  font-display: swap;
 }
 p {
   font-family: "OpenSans-Regular";

@@ -25,6 +25,12 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         
+        {/* Preload critical fonts for faster loading and better UX */}
+        <link rel="preload" href="/fonts/Lato-Regular.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/Lato-Bold.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/OpenSans-Regular.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/OpenSans-Semibold.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
+
         {/* Favicons */}
         <link rel="apple-touch-icon" href="/statics/apple-touch-icon.png" />
         <link rel="shortcut icon" href="/statics/favicon.ico" />
