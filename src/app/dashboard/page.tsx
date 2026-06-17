@@ -19,7 +19,9 @@ import {
   Calendar,
   AlertCircle,
   User,
-  X
+  X,
+  FolderOpen,
+  Trash2
 } from 'lucide-react';
 import { 
   validateSession, 
@@ -30,7 +32,13 @@ import {
   gradeSubmission,
   updateUserProfile,
   enrollInCourse,
-  SubmissionData 
+  SubmissionData,
+  getAdminCohorts,
+  scheduleLiveClass,
+  publishClassRecording,
+  addLearningResource,
+  getLearningResources,
+  deleteLearningResource
 } from '@/lib/supabase';
 
 interface CurrentUserSession {
@@ -39,6 +47,7 @@ interface CurrentUserSession {
   email: string;
   course: string;
   role?: 'student' | 'tutor' | 'admin';
+  assignedCourseId?: number;
 }
 
 interface StudentProgress {
@@ -51,7 +60,7 @@ export default function Dashboard() {
   const [studentProgress, setStudentProgress] = useState<StudentProgress>({ completedWeeks: [], currentWeek: 1 });
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<'curriculum' | 'live' | 'submissions' | 'tutor' | 'profile'>('curriculum');
+  const [activeTab, setActiveTab] = useState<'curriculum' | 'live' | 'submissions' | 'resources' | 'tutor' | 'profile'>('curriculum');
 
   // LMS Data States
   const [liveClasses, setLiveClasses] = useState<any[]>([]);
@@ -75,6 +84,29 @@ export default function Dashboard() {
   const [gradeScore, setGradeScore] = useState<number>(100);
   const [tutorFeedback, setTutorFeedback] = useState<string>('');
   const [gradingProgress, setGradingProgress] = useState<boolean>(false);
+
+  // Tutor scheduler & publishing states
+  const [tutorSubTab, setTutorSubTab] = useState<'grading' | 'schedule' | 'recordings' | 'resources'>('grading');
+  const [scheduleCohortId, setScheduleCohortId] = useState<number>(1);
+  const [scheduleTopic, setScheduleTopic] = useState<string>('');
+  const [scheduleTime, setScheduleTime] = useState<string>('');
+  const [scheduleMeetingLink, setScheduleMeetingLink] = useState<string>('');
+  const [schedulingLiveClass, setSchedulingLiveClass] = useState<boolean>(false);
+  const [tutorCohortsList, setTutorCohortsList] = useState<any[]>([]);
+
+  const [selectedClassForRecording, setSelectedClassForRecording] = useState<number>(0);
+  const [classRecordingLink, setClassRecordingLink] = useState<string>('');
+  const [publishingRecording, setPublishingRecording] = useState<boolean>(false);
+
+  const [resourceCourseId, setResourceCourseId] = useState<number>(1);
+  const [resourceCategory, setResourceCategory] = useState<string>('Template');
+  const [resourceTitle, setResourceTitle] = useState<string>('');
+  const [resourceDescription, setResourceDescription] = useState<string>('');
+  const [resourceUrl, setResourceUrl] = useState<string>('');
+  const [savingResource, setSavingResource] = useState<boolean>(false);
+  const [tutorResources, setTutorResources] = useState<any[]>([]);
+  
+  const [studentResources, setStudentResources] = useState<any[]>([]);
 
   // Course Catalog & In-Dashboard Checkout States
   const [coursesList, setCoursesList] = useState<Course[]>([]);
@@ -116,8 +148,11 @@ export default function Dashboard() {
       if (user.role === 'tutor' || user.role === 'admin') {
         setActiveTab('tutor');
         // Fetch all student submissions
-        getAllSubmissions().then(data => {
+        getAllSubmissions(user.assignedCourseId).then(data => {
           setAllSubmissions(data);
+        });
+        getAdminCohorts().then(data => {
+          setTutorCohortsList(data);
         });
       }
 
@@ -142,6 +177,11 @@ export default function Dashboard() {
             getSubmissions(user.id || 'mock-id', matchedCourse.id).then(subs => {
               setSubmissions(subs);
             });
+
+            // Fetch student learning resources
+            getLearningResources(matchedCourse.id).then(resList => {
+              setStudentResources(resList);
+            });
           }
         }
         
@@ -154,6 +194,15 @@ export default function Dashboard() {
       });
     }
   }, []);
+
+  // Load learning resources for tutor whenever the target course track selection changes
+  useEffect(() => {
+    if (currentUser?.role === 'tutor' || currentUser?.role === 'admin') {
+      getLearningResources(resourceCourseId).then(data => {
+        setTutorResources(data);
+      });
+    }
+  }, [resourceCourseId, currentUser]);
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -244,7 +293,7 @@ export default function Dashboard() {
       setSelectedSubmission(null);
       setTutorFeedback('');
       // Reload submissions
-      const data = await getAllSubmissions();
+      const data = await getAllSubmissions(currentUser?.assignedCourseId);
       setAllSubmissions(data);
     } else {
       alert(`Grading failed: ${res.error}`);
@@ -623,6 +672,73 @@ export default function Dashboard() {
           max-height: 90vh;
           overflow-y: auto;
         }
+        .sub-tabs-header {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 20px;
+          border-bottom: 1px solid #cbd5e1;
+          padding-bottom: 8px;
+          flex-wrap: wrap;
+        }
+        .sub-tab-btn {
+          background: #f1f5f9;
+          border: 1px solid #e2e8f0;
+          padding: 8px 16px;
+          font-size: 0.88rem;
+          font-weight: 600;
+          color: #475569;
+          cursor: pointer;
+          border-radius: 6px;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .sub-tab-btn.active {
+          background: #1d3ede;
+          color: white;
+          border-color: #1d3ede;
+        }
+        .sub-tab-btn:hover {
+          background: #e2e8f0;
+        }
+        .sub-tab-btn.active:hover {
+          background: #1d3ede;
+        }
+        .resource-card {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          padding: 18px;
+          margin-bottom: 15px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          transition: all 0.2s ease;
+        }
+        .resource-card:hover {
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .category-badge {
+          display: inline-block;
+          font-size: 0.72rem;
+          font-weight: 700;
+          padding: 3px 8px;
+          border-radius: 20px;
+          text-transform: uppercase;
+        }
+        .cat-template {
+          background: #e0f2fe;
+          color: #0369a1;
+        }
+        .cat-slides {
+          background: #fef3c7;
+          color: #d97706;
+        }
+        .cat-reference {
+          background: #dcfce7;
+          color: #15803d;
+        }
       `}</style>
 
       <div className="dashboard-container">
@@ -668,6 +784,9 @@ export default function Dashboard() {
                 <button onClick={() => setActiveTab('submissions')} className={`tab-btn ${activeTab === 'submissions' ? 'active' : ''}`}>
                   <UploadCloud size={18} /> Projects Submission
                 </button>
+                <button onClick={() => setActiveTab('resources')} className={`tab-btn ${activeTab === 'resources' ? 'active' : ''}`}>
+                  <FolderOpen size={18} /> Learning Resources ({studentResources.length})
+                </button>
               </>
             ) : (
               <button className="tab-btn active">
@@ -676,7 +795,7 @@ export default function Dashboard() {
             )
           ) : (
             <button onClick={() => setActiveTab('tutor')} className={`tab-btn ${activeTab === 'tutor' ? 'active' : ''}`}>
-              <CheckSquare size={18} /> Tutor Grading Panel ({allSubmissions.filter(s => s.gradeScore === undefined).length} pending)
+              <CheckSquare size={18} /> Tutor Dashboard
             </button>
           )}
           <button onClick={() => setActiveTab('profile')} className={`tab-btn ${activeTab === 'profile' ? 'active' : ''}`}>
@@ -950,113 +1069,551 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Tab 4: Tutor Grading Panel */}
-        {activeTab === 'tutor' && isTutorOrAdmin && (
-          <div className="row">
-            {/* Submissions List */}
-            <div className="col-md-7">
-              <h2 style={{ fontSize: '1.4rem', color: '#0f172a', fontWeight: 700, marginBottom: '20px' }}>
-                Student Submission Queue
-              </h2>
-              {allSubmissions.length === 0 ? (
-                <p>No student project submissions found.</p>
-              ) : (
-                allSubmissions.map((sub, idx) => (
-                  <div key={idx} className="tutor-grading-card" style={{ border: selectedSubmission?.id === sub.id ? '2px solid #1d3ede' : '1px solid #e2e8f0' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                      <div>
-                        <h4 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>{sub.studentName}</h4>
-                        <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Course ID: {sub.courseId} • Week Module {sub.weekNumber}</span>
-                      </div>
-                      <div>
-                        {sub.gradeScore !== undefined ? (
-                          <span style={{ background: '#dcfce7', color: '#15803d', padding: '3px 8px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 700 }}>
-                            Graded: {sub.gradeScore}/100
-                          </span>
-                        ) : (
-                          <span style={{ background: '#fef3c7', color: '#b45309', padding: '3px 8px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 700 }}>
-                            Ungraded
-                          </span>
-                        )}
-                      </div>
-                    </div>
+        {/* Tab: Learning Resources for students */}
+        {activeTab === 'resources' && !isTutorOrAdmin && (
+          <div>
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.5rem', color: '#1a1a2e', marginBottom: '10px' }}>
+              <FolderOpen size={24} style={{ color: '#1d3ede' }} /> Course Library & Resources
+            </h2>
+            <p style={{ color: '#64748b', fontSize: '0.92rem', marginBottom: '25px' }}>
+              Access study guides, lecture slides, and project templates uploaded by your tutors for the <strong>{course?.name}</strong> track.
+            </p>
 
-                    <div style={{ display: 'flex', gap: '15px', fontSize: '0.85rem', marginBottom: '12px' }}>
-                      <a href={sub.gitLink} target="_blank" rel="noreferrer" style={{ color: '#1d3ede', display: 'inline-flex', alignItems: 'center', gap: '3px', textDecoration: 'none' }}>
-                        GitHub Link <ExternalLink size={12} />
-                      </a>
-                      <a href={sub.liveLink} target="_blank" rel="noreferrer" style={{ color: '#1d3ede', display: 'inline-flex', alignItems: 'center', gap: '3px', textDecoration: 'none' }}>
-                        Live Link <ExternalLink size={12} />
-                      </a>
-                    </div>
-
-                    <button onClick={() => {
-                      setSelectedSubmission(sub);
-                      setGradeScore(sub.gradeScore || 100);
-                      setTutorFeedback(sub.tutorFeedback || '');
-                    }} className="btn-primary" style={{ padding: '6px 14px', fontSize: '0.82rem' }}>
-                      {sub.gradeScore !== undefined ? 'Re-grade Project' : 'Evaluate & Grade'}
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Grading Evaluator Pane */}
-            <div className="col-md-5">
-              <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '25px', borderRadius: '16px', position: 'sticky', top: '20px' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <CheckSquare size={20} style={{ color: '#1d3ede' }} /> Evaluation Center
-                </h3>
-
-                {selectedSubmission ? (
-                  <form onSubmit={handleGradeSubmit}>
-                    <div style={{ padding: '12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '15px', fontSize: '0.9rem' }}>
-                      <p style={{ margin: '0 0 5px 0' }}><strong>Student Name:</strong> {selectedSubmission.studentName}</p>
-                      <p style={{ margin: '0 0 5px 0' }}><strong>Module Assignment:</strong> Week {selectedSubmission.weekNumber}</p>
-                      <p style={{ margin: '0 0 5px 0' }}><strong>GitHub Repository:</strong> <a href={selectedSubmission.gitLink} target="_blank" rel="noreferrer" style={{ color: '#1d3ede' }}>View Code</a></p>
-                      <p style={{ margin: 0 }}><strong>Deployment Link:</strong> <a href={selectedSubmission.liveLink} target="_blank" rel="noreferrer" style={{ color: '#1d3ede' }}>View Project</a></p>
-                    </div>
-
-                    <label style={{ fontWeight: 600, color: '#475569' }}>Evaluation Grade Score (1 - 100)</label>
-                    <input 
-                      type="number" 
-                      min="1" 
-                      max="100" 
-                      value={gradeScore} 
-                      onChange={(e) => setGradeScore(parseInt(e.target.value))} 
-                      required 
-                      className="form-control"
-                    />
-
-                    <label style={{ fontWeight: 600, color: '#475569' }}>Tutor Grading Feedback</label>
-                    <textarea 
-                      rows={4} 
-                      value={tutorFeedback} 
-                      onChange={(e) => setTutorFeedback(e.target.value)} 
-                      placeholder="Write evaluation review, code issues or improvement ideas..." 
-                      required 
-                      className="form-control"
-                      style={{ height: '100px', resize: 'vertical' }}
-                    ></textarea>
-
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      <button type="submit" disabled={gradingProgress} className="btn-primary" style={{ flex: 1 }}>
-                        {gradingProgress ? 'Saving...' : 'Submit Evaluation'}
-                      </button>
-                      <button type="button" onClick={() => setSelectedSubmission(null)} className="btn-primary" style={{ background: '#64748b', flex: 0.5 }}>
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
-                ) : (
-                  <div style={{ textAlign: 'center', padding: '30px 10px', color: '#64748b' }}>
-                    <AlertCircle size={36} style={{ color: '#94a3b8', marginBottom: '10px' }} />
-                    <p>Select a student submission from the queue list to evaluate and submit scores.</p>
-                  </div>
-                )}
+            {studentResources.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', color: '#64748b' }}>
+                <FolderOpen size={48} style={{ color: '#94a3b8', marginBottom: '15px' }} />
+                <h3>No resources uploaded yet</h3>
+                <p style={{ fontSize: '0.88rem', marginTop: '5px' }}>Check back later. Your tutor will share slides and templates here.</p>
               </div>
+            ) : (
+              <div style={{ display: 'grid', gap: '15px' }}>
+                {studentResources.map((res) => (
+                  <div key={res.id} className="resource-card">
+                    <div style={{ flex: 1, paddingRight: '20px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                        <span className={`category-badge ${
+                          res.category === 'Template' ? 'cat-template' :
+                          res.category === 'Slides' ? 'cat-slides' : 'cat-reference'
+                        }`}>
+                          {res.category}
+                        </span>
+                        <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
+                          Uploaded {new Date(res.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <h3 style={{ fontSize: '1.1rem', color: '#0f172a', fontWeight: 600, margin: '0 0 5px 0' }}>
+                        {res.title}
+                      </h3>
+                      {res.description && (
+                        <p style={{ margin: 0, color: '#475569', fontSize: '0.9rem', lineHeight: 1.4 }}>
+                          {res.description}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <a 
+                        href={res.url} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="btn-primary" 
+                        style={{ padding: '8px 16px', fontSize: '0.88rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        Access Material <ExternalLink size={14} />
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab 4: Tutor Dashboard Layout */}
+        {activeTab === 'tutor' && isTutorOrAdmin && (
+          <div>
+            {/* Tutor Sub-tabs */}
+            <div className="sub-tabs-header">
+              <button 
+                onClick={() => setTutorSubTab('grading')} 
+                className={`sub-tab-btn ${tutorSubTab === 'grading' ? 'active' : ''}`}
+              >
+                <CheckSquare size={16} /> Submissions Queue ({allSubmissions.filter(s => s.gradeScore === undefined).length} pending)
+              </button>
+              <button 
+                onClick={() => setTutorSubTab('schedule')} 
+                className={`sub-tab-btn ${tutorSubTab === 'schedule' ? 'active' : ''}`}
+              >
+                <Calendar size={16} /> Schedule Live Session
+              </button>
+              <button 
+                onClick={() => setTutorSubTab('recordings')} 
+                className={`sub-tab-btn ${tutorSubTab === 'recordings' ? 'active' : ''}`}
+              >
+                <Video size={16} /> Publish Lecture Recordings
+              </button>
+              <button 
+                onClick={() => setTutorSubTab('resources')} 
+                className={`sub-tab-btn ${tutorSubTab === 'resources' ? 'active' : ''}`}
+              >
+                <FolderOpen size={16} /> Share Study Resources
+              </button>
             </div>
+
+            {/* Sub-tab 1: Grading (Existing layout) */}
+            {tutorSubTab === 'grading' && (
+              <div className="row">
+                <div className="col-md-7">
+                  <h2 style={{ fontSize: '1.4rem', color: '#0f172a', fontWeight: 700, marginBottom: '20px' }}>
+                    Student Submission Queue {currentUser?.assignedCourseId ? `(Track Filter Active)` : ''}
+                  </h2>
+                  {allSubmissions.length === 0 ? (
+                    <p style={{ color: '#64748b' }}>No student project submissions found.</p>
+                  ) : (
+                    allSubmissions.map((sub, idx) => (
+                      <div key={idx} className="tutor-grading-card" style={{ border: selectedSubmission?.id === sub.id ? '2px solid #1d3ede' : '1px solid #e2e8f0' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                          <div>
+                            <h4 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>{sub.studentName}</h4>
+                            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Course ID: {sub.courseId} • Week Module {sub.weekNumber}</span>
+                          </div>
+                          <div>
+                            {sub.gradeScore !== undefined ? (
+                              <span style={{ background: '#dcfce7', color: '#15803d', padding: '3px 8px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 700 }}>
+                                Graded: {sub.gradeScore}/100
+                              </span>
+                            ) : (
+                              <span style={{ background: '#fef3c7', color: '#b45309', padding: '3px 8px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 700 }}>
+                                Ungraded
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '15px', fontSize: '0.85rem', marginBottom: '12px' }}>
+                          <a href={sub.gitLink} target="_blank" rel="noreferrer" style={{ color: '#1d3ede', display: 'inline-flex', alignItems: 'center', gap: '3px', textDecoration: 'none' }}>
+                            GitHub Link <ExternalLink size={12} />
+                          </a>
+                          <a href={sub.liveLink} target="_blank" rel="noreferrer" style={{ color: '#1d3ede', display: 'inline-flex', alignItems: 'center', gap: '3px', textDecoration: 'none' }}>
+                            Live Link <ExternalLink size={12} />
+                          </a>
+                        </div>
+
+                        <button onClick={() => {
+                          setSelectedSubmission(sub);
+                          setGradeScore(sub.gradeScore || 100);
+                          setTutorFeedback(sub.tutorFeedback || '');
+                        }} className="btn-primary" style={{ padding: '6px 14px', fontSize: '0.82rem' }}>
+                          {sub.gradeScore !== undefined ? 'Re-grade Project' : 'Evaluate & Grade'}
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="col-md-5">
+                  <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '25px', borderRadius: '16px', position: 'sticky', top: '20px' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <CheckSquare size={20} style={{ color: '#1d3ede' }} /> Evaluation Center
+                    </h3>
+
+                    {selectedSubmission ? (
+                      <form onSubmit={handleGradeSubmit}>
+                        <div style={{ padding: '12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '15px', fontSize: '0.9rem' }}>
+                          <p style={{ margin: '0 0 5px 0' }}><strong>Student Name:</strong> {selectedSubmission.studentName}</p>
+                          <p style={{ margin: '0 0 5px 0' }}><strong>Module Assignment:</strong> Week {selectedSubmission.weekNumber}</p>
+                          <p style={{ margin: '0 0 5px 0' }}><strong>GitHub Repository:</strong> <a href={selectedSubmission.gitLink} target="_blank" rel="noreferrer" style={{ color: '#1d3ede' }}>View Code</a></p>
+                          <p style={{ margin: 0 }}><strong>Deployment Link:</strong> <a href={selectedSubmission.liveLink} target="_blank" rel="noreferrer" style={{ color: '#1d3ede' }}>View Project</a></p>
+                        </div>
+
+                        <label style={{ fontWeight: 600, color: '#475569' }}>Evaluation Grade Score (1 - 100)</label>
+                        <input 
+                          type="number" 
+                          min="1" 
+                          max="100" 
+                          value={gradeScore} 
+                          onChange={(e) => setGradeScore(parseInt(e.target.value))} 
+                          required 
+                          className="form-control"
+                        />
+
+                        <label style={{ fontWeight: 600, color: '#475569' }}>Tutor Grading Feedback</label>
+                        <textarea 
+                          rows={4} 
+                          value={tutorFeedback} 
+                          onChange={(e) => setTutorFeedback(e.target.value)} 
+                          placeholder="Write evaluation review, code issues or improvement ideas..." 
+                          required 
+                          className="form-control"
+                          style={{ height: '100px', resize: 'vertical' }}
+                        ></textarea>
+
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button type="submit" disabled={gradingProgress} className="btn-primary" style={{ flex: 1 }}>
+                            {gradingProgress ? 'Saving...' : 'Submit Evaluation'}
+                          </button>
+                          <button type="button" onClick={() => setSelectedSubmission(null)} className="btn-primary" style={{ background: '#64748b', flex: 0.5 }}>
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '30px 10px', color: '#64748b' }}>
+                        <AlertCircle size={36} style={{ color: '#94a3b8', marginBottom: '10px' }} />
+                        <p>Select a student submission from the queue list to evaluate and submit scores.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Sub-tab 2: Schedule Live Session */}
+            {tutorSubTab === 'schedule' && (
+              <div className="row">
+                <div className="col-md-6">
+                  <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '25px', borderRadius: '16px' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Calendar size={20} style={{ color: '#1d3ede' }} /> Schedule Live Session
+                    </h3>
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      setSchedulingLiveClass(true);
+                      const res = await scheduleLiveClass(
+                        scheduleCohortId,
+                        scheduleTopic,
+                        new Date(scheduleTime).toISOString(),
+                        scheduleMeetingLink
+                      );
+                      if (res.success) {
+                        alert('✅ Live class scheduled successfully!');
+                        setScheduleTopic('');
+                        setScheduleTime('');
+                        setScheduleMeetingLink('');
+                        // Reload live classes
+                        const classes = await getLiveClasses(currentUser?.email || '');
+                        setLiveClasses(classes);
+                      } else {
+                        alert(`Error scheduling live class: ${res.error}`);
+                      }
+                      setSchedulingLiveClass(false);
+                    }}>
+                      <label style={{ fontWeight: 600, color: '#475569' }}>Select Student Cohort</label>
+                      <select 
+                        value={scheduleCohortId} 
+                        onChange={(e) => setScheduleCohortId(parseInt(e.target.value))} 
+                        className="form-control"
+                      >
+                        {tutorCohortsList.length === 0 ? (
+                          <option value="1">Software Engineering Cohort 1 (Default)</option>
+                        ) : (
+                          tutorCohortsList.map(c => (
+                            <option key={c.id} value={c.id}>{c.name} ({c.courseName})</option>
+                          ))
+                        )}
+                      </select>
+
+                      <label style={{ fontWeight: 600, color: '#475569' }}>Class Lecture Topic</label>
+                      <input 
+                        type="text" 
+                        value={scheduleTopic} 
+                        onChange={(e) => setScheduleTopic(e.target.value)} 
+                        placeholder="e.g. Git and GitHub workflow for team projects" 
+                        required 
+                        className="form-control"
+                      />
+
+                      <label style={{ fontWeight: 600, color: '#475569' }}>Schedule Date & Time</label>
+                      <input 
+                        type="datetime-local" 
+                        value={scheduleTime} 
+                        onChange={(e) => setScheduleTime(e.target.value)} 
+                        required 
+                        className="form-control"
+                      />
+
+                      <label style={{ fontWeight: 600, color: '#475569' }}>Zoom / Google Meet URL</label>
+                      <input 
+                        type="url" 
+                        value={scheduleMeetingLink} 
+                        onChange={(e) => setScheduleMeetingLink(e.target.value)} 
+                        placeholder="https://zoom.us/j/meeting_id" 
+                        required 
+                        className="form-control"
+                      />
+
+                      <button type="submit" disabled={schedulingLiveClass} className="btn-primary" style={{ width: '100%', marginTop: '10px' }}>
+                        {schedulingLiveClass ? 'Scheduling...' : 'Launch Lecture Event'}
+                      </button>
+                    </form>
+                  </div>
+                </div>
+                
+                <div className="col-md-6">
+                  <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '25px', borderRadius: '16px' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', marginBottom: '15px' }}>
+                      All Scheduled Events
+                    </h3>
+                    {liveClasses.length === 0 ? (
+                      <p style={{ color: '#64748b' }}>No live classes found.</p>
+                    ) : (
+                      liveClasses.map((lc) => (
+                        <div key={lc.id} style={{ padding: '12px 0', borderBottom: '1px solid #e2e8f0' }}>
+                          <div style={{ fontWeight: 600, color: '#0f172a' }}>{lc.topic}</div>
+                          <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '4px' }}>
+                            📅 {new Date(lc.schedule_time).toLocaleString()}
+                          </div>
+                          <div style={{ fontSize: '0.82rem', marginTop: '4px' }}>
+                            🔗 <a href={lc.meeting_link} target="_blank" rel="noreferrer" style={{ color: '#1d3ede' }}>Join Meeting Link</a>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Sub-tab 3: Publish Lecture Recordings */}
+            {tutorSubTab === 'recordings' && (
+              <div className="row">
+                <div className="col-md-6">
+                  <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '25px', borderRadius: '16px' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Video size={20} style={{ color: '#1d3ede' }} /> Publish Zoom Recording
+                    </h3>
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (selectedClassForRecording === 0) {
+                        alert('Please select a completed live class lecture to update.');
+                        return;
+                      }
+                      setPublishingRecording(true);
+                      const res = await publishClassRecording(selectedClassForRecording, classRecordingLink);
+                      if (res.success) {
+                        alert('✅ Playback link published successfully for students!');
+                        setSelectedClassForRecording(0);
+                        setClassRecordingLink('');
+                        // Reload live classes
+                        const classes = await getLiveClasses(currentUser?.email || '');
+                        setLiveClasses(classes);
+                      } else {
+                        alert(`Error publishing recording: ${res.error}`);
+                      }
+                      setPublishingRecording(false);
+                    }}>
+                      <label style={{ fontWeight: 600, color: '#475569' }}>Select Completed Live Lecture</label>
+                      <select 
+                        value={selectedClassForRecording} 
+                        onChange={(e) => setSelectedClassForRecording(parseInt(e.target.value))} 
+                        className="form-control"
+                      >
+                        <option value="0">Choose completed class...</option>
+                        {liveClasses
+                          .map(lc => (
+                            <option key={lc.id} value={lc.id}>{lc.topic} ({new Date(lc.schedule_time).toLocaleDateString()})</option>
+                          ))}
+                      </select>
+
+                      <label style={{ fontWeight: 600, color: '#475569' }}>Recording Link URL (YouTube / Zoom cloud)</label>
+                      <input 
+                        type="url" 
+                        value={classRecordingLink} 
+                        onChange={(e) => setClassRecordingLink(e.target.value)} 
+                        placeholder="https://youtube.com/watch?v=... or https://zoom.us/rec/play/..." 
+                        required 
+                        className="form-control"
+                      />
+
+                      <button type="submit" disabled={publishingRecording} className="btn-primary" style={{ width: '100%', marginTop: '10px' }}>
+                        {publishingRecording ? 'Publishing...' : 'Update & Publish Recording'}
+                      </button>
+                    </form>
+                  </div>
+                </div>
+
+                <div className="col-md-6">
+                  <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '25px', borderRadius: '16px' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', marginBottom: '15px' }}>
+                      Roster Lecture Record
+                    </h3>
+                    {liveClasses.length === 0 ? (
+                      <p style={{ color: '#64748b' }}>No class recordings found.</p>
+                    ) : (
+                      liveClasses.map((lc) => (
+                        <div key={lc.id} style={{ padding: '12px 0', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <div style={{ fontWeight: 600, color: '#0f172a' }}>{lc.topic}</div>
+                            <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '2px' }}>
+                              📅 {new Date(lc.schedule_time).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div>
+                            {lc.recording_link ? (
+                              <span style={{ color: '#10b981', fontWeight: 700, fontSize: '0.85rem' }}>Published ✓</span>
+                            ) : (
+                              <span style={{ color: '#ef4444', fontWeight: 700, fontSize: '0.85rem' }}>No Video</span>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Sub-tab 4: Share Study Resources */}
+            {tutorSubTab === 'resources' && (
+              <div className="row">
+                <div className="col-md-5">
+                  <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '25px', borderRadius: '16px' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <FolderOpen size={20} style={{ color: '#1d3ede' }} /> Share Study Material
+                    </h3>
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      setSavingResource(true);
+                      const res = await addLearningResource(
+                        resourceCourseId,
+                        resourceTitle,
+                        resourceDescription,
+                        resourceUrl,
+                        resourceCategory
+                      );
+                      if (res.success) {
+                        alert('✅ Study resource published successfully for students!');
+                        setResourceTitle('');
+                        setResourceDescription('');
+                        setResourceUrl('');
+                        // Reload tutor resources list
+                        const data = await getLearningResources(resourceCourseId);
+                        setTutorResources(data);
+                      } else {
+                        alert(`Error saving resource: ${res.error}`);
+                      }
+                      setSavingResource(false);
+                    }}>
+                      <label style={{ fontWeight: 600, color: '#475569' }}>Target Course Track</label>
+                      <select 
+                        value={resourceCourseId} 
+                        onChange={(e) => setResourceCourseId(parseInt(e.target.value))} 
+                        className="form-control"
+                      >
+                        {coursesList.map(c => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+
+                      <label style={{ fontWeight: 600, color: '#475569' }}>Resource Category</label>
+                      <select 
+                        value={resourceCategory} 
+                        onChange={(e) => setResourceCategory(e.target.value)} 
+                        className="form-control"
+                      >
+                        <option value="Template">Template (Project boilerplate / files)</option>
+                        <option value="Slides">Slides (Lecture presentation slide decks)</option>
+                        <option value="Reference">Reference (External guides / docs)</option>
+                      </select>
+
+                      <label style={{ fontWeight: 600, color: '#475569' }}>Resource Title</label>
+                      <input 
+                        type="text" 
+                        value={resourceTitle} 
+                        onChange={(e) => setResourceTitle(e.target.value)} 
+                        placeholder="e.g. Week 1 UI Wireframing Mockup Template" 
+                        required 
+                        className="form-control"
+                      />
+
+                      <label style={{ fontWeight: 600, color: '#475569' }}>Brief Description</label>
+                      <input 
+                        type="text" 
+                        value={resourceDescription} 
+                        onChange={(e) => setResourceDescription(e.target.value)} 
+                        placeholder="e.g. Figma file links and starter layouts." 
+                        required 
+                        className="form-control"
+                      />
+
+                      <label style={{ fontWeight: 600, color: '#475569' }}>Material Access Link / URL</label>
+                      <input 
+                        type="url" 
+                        value={resourceUrl} 
+                        onChange={(e) => setResourceUrl(e.target.value)} 
+                        placeholder="https://drive.google.com/... or https://figma.com/..." 
+                        required 
+                        className="form-control"
+                      />
+
+                      <button type="submit" disabled={savingResource} className="btn-primary" style={{ width: '100%', marginTop: '10px' }}>
+                        {savingResource ? 'Publishing...' : 'Upload resource'}
+                      </button>
+                    </form>
+                  </div>
+                </div>
+
+                <div className="col-md-7">
+                  <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '25px', borderRadius: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                      <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+                        Resource Library
+                      </h3>
+                      <select 
+                        value={resourceCourseId} 
+                        onChange={(e) => setResourceCourseId(parseInt(e.target.value))} 
+                        style={{ padding: '6px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.85rem' }}
+                      >
+                        {coursesList.map(c => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {tutorResources.length === 0 ? (
+                      <p style={{ color: '#64748b' }}>No resources published for this track yet.</p>
+                    ) : (
+                      tutorResources.map((res) => (
+                        <div key={res.id} style={{ padding: '12px 0', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span className={`category-badge ${
+                                res.category === 'Template' ? 'cat-template' :
+                                res.category === 'Slides' ? 'cat-slides' : 'cat-reference'
+                              }`}>
+                                {res.category}
+                              </span>
+                              <strong style={{ color: '#0f172a' }}>{res.title}</strong>
+                            </div>
+                            <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '4px' }}>
+                              {res.description}
+                            </div>
+                          </div>
+                          <div>
+                            <button 
+                              onClick={async () => {
+                                if (confirm('Are you sure you want to delete this resource?')) {
+                                  const dRes = await deleteLearningResource(res.id);
+                                  if (dRes.success) {
+                                    alert('Resource deleted.');
+                                    const data = await getLearningResources(resourceCourseId);
+                                    setTutorResources(data);
+                                  } else {
+                                    alert(`Failed: ${dRes.error}`);
+                                  }
+                                }
+                              }} 
+                              style={{ background: '#fef2f2', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '6px 10px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 600 }}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

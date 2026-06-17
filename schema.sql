@@ -121,3 +121,14 @@ create index if not exists idx_live_classes_cohort_time on live_classes(cohort_i
 
 -- Migration updates
 alter table courses add column if not exists video_url text;
+alter table users add column if not exists assigned_course_id integer references courses(id);
+
+create table if not exists resources (
+    id serial primary key,
+    course_id integer references courses(id) on delete cascade not null,
+    title text not null,
+    description text,
+    url text not null,
+    category text not null, -- e.g. 'Template', 'Slides', 'Reference'
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);

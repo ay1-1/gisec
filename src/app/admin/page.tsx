@@ -31,7 +31,10 @@ import {
   updateCourseDetails,
   AdminStats,
   AdminStudentData,
-  AdminCohortData
+  AdminCohortData,
+  getAdminTutors,
+  assignTutorToCourse,
+  AdminTutorData
 } from '@/lib/supabase';
 import { getCourses } from '@/lib/api';
 import { Course } from '@/types/course';
@@ -42,12 +45,13 @@ export default function AdminDashboard() {
   // UI & Loading States
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'cohorts' | 'tutors'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'cohorts' | 'tutors' | 'courses'>('overview');
   
   // Data States
   const [stats, setStats] = useState<AdminStats>({ totalStudents: 0, totalTutors: 0, activeCohorts: 0, totalRevenue: '₦0' });
   const [students, setStudents] = useState<AdminStudentData[]>([]);
   const [cohorts, setCohorts] = useState<AdminCohortData[]>([]);
+  const [tutors, setTutors] = useState<AdminTutorData[]>([]);
   
   // Form States
   const [newCohortName, setNewCohortName] = useState<string>('');
@@ -96,16 +100,18 @@ export default function AdminDashboard() {
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      const [sData, stData, cData, listCourses] = await Promise.all([
+      const [sData, stData, cData, listCourses, tutorsList] = await Promise.all([
         getAdminStats(),
         getAdminStudents(),
         getAdminCohorts(),
-        getCourses()
+        getCourses(),
+        getAdminTutors()
       ]);
       setStats(sData);
       setStudents(stData);
       setCohorts(cData);
       setAllCourses(listCourses);
+      setTutors(tutorsList);
 
       // Save courses list to mock storage if not already there (mock mode initialization)
       if (typeof window !== 'undefined' && !localStorage.getItem('gisek_courses_mock')) {
@@ -207,13 +213,28 @@ export default function AdminDashboard() {
       setStaffName('');
       setStaffEmail('');
       
-      // Update statistics
-      const updatedStats = await getAdminStats();
+      // Update statistics and tutors list
+      const [updatedStats, updatedTutors] = await Promise.all([
+        getAdminStats(),
+        getAdminTutors()
+      ]);
       setStats(updatedStats);
+      setTutors(updatedTutors);
     } else {
       setMsg({ type: 'error', text: res.error || 'Failed to onboard staff member.' });
     }
     setOnboardingStaff(false);
+  };
+
+  const handleAssignTutor = async (tutorId: string, courseId: number | null) => {
+    const res = await assignTutorToCourse(tutorId, courseId);
+    if (res.success) {
+      alert('Tutor specialization course assigned successfully!');
+      const updatedTutors = await getAdminTutors();
+      setTutors(updatedTutors);
+    } else {
+      alert(res.error || 'Failed to assign course to tutor.');
+    }
   };
 
   const handleToggleCohort = async (id: number, currentStatus: boolean) => {
@@ -803,8 +824,8 @@ export default function AdminDashboard() {
         {activeTab === 'tutors' && (
           <section>
             <div className="row">
-              <div className="col-lg-6 col-md-12">
-                <div className="form-pane">
+              <div className="col-lg-5 col-md-12">
+                <div className="form-pane" style={{ marginBottom: '20px' }}>
                   <h3 className="form-title"><UserPlus size={18} style={{ color: '#01e6f8' }} /> Onboard Staff Member</h3>
                   <form onSubmit={handleOnboardStaff}>
                     <div className="input-group">
@@ -842,9 +863,7 @@ export default function AdminDashboard() {
                     </button>
                   </form>
                 </div>
-              </div>
 
-              <div className="col-lg-6 col-md-12">
                 <div className="form-pane">
                   <h4 style={{ color: '#fff', fontSize: '1.02rem', marginBottom: '15px', fontWeight: 700 }}>Security Information</h4>
                   <p style={{ fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.6, marginBottom: '10px' }}>
@@ -859,6 +878,84 @@ export default function AdminDashboard() {
                   <p style={{ fontSize: '0.85rem', color: '#94a3b8', margin: 0 }}>
                     * Example: For <code>sarah@gisec.africa</code>, the default password is: <code>GisecStaff@sarah!</code>
                   </p>
+                </div>
+              </div>
+
+              <div className="col-lg-7 col-md-12">
+                <div className="data-table-wrap">
+                  <h3 className="form-title" style={{ padding: '20px 20px 0 20px', margin: 0, color: '#fff' }}>
+                    Staff Directory & Assignments
+                  </h3>
+                  <p style={{ fontSize: '0.85rem', color: '#94a3b8', padding: '5px 20px 15px 20px', margin: 0 }}>
+                    Assign tutors to specific tracks to filter their submission grading queues. Tutors assigned to "All Tracks" will see all submissions.
+                  </p>
+                  
+                  {tutors.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '40px 20px', color: '#cbd5e1' }}>
+                      No staff members onboarded yet.
+                    </div>
+                  ) : (
+                    <div style={{ overflowX: 'auto' }}>
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Staff Member</th>
+                            <th>Role</th>
+                            <th>Current Specialty</th>
+                            <th>Assign Course Track</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tutors.map((t) => (
+                            <tr key={t.id}>
+                              <td>
+                                <div style={{ fontWeight: 700, color: '#fff' }}>{t.fullName}</div>
+                                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{t.email}</div>
+                              </td>
+                              <td style={{ textTransform: 'capitalize' }}>
+                                <span className={`badge ${t.role === 'admin' ? 'badge-success' : 'badge-warning'}`} style={{
+                                  backgroundColor: t.role === 'admin' ? 'rgba(1, 230, 248, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                                  color: t.role === 'admin' ? '#01e6f8' : '#f59e0b',
+                                  border: t.role === 'admin' ? '1px solid rgba(1, 230, 248, 0.2)' : '1px solid rgba(245, 158, 11, 0.2)'
+                                }}>
+                                  {t.role}
+                                </span>
+                              </td>
+                              <td style={{ color: '#01e6f8', fontWeight: 600 }}>
+                                {t.assignedCourseName || 'All Tracks'}
+                              </td>
+                              <td>
+                                {t.role === 'tutor' ? (
+                                  <select 
+                                    className="action-select"
+                                    value={t.assignedCourseId || ''}
+                                    onChange={(e) => handleAssignTutor(t.id, e.target.value ? parseInt(e.target.value) : null)}
+                                    style={{
+                                      background: '#0f172a',
+                                      border: '1px solid rgba(255,255,255,0.1)',
+                                      color: '#fff',
+                                      padding: '6px 10px',
+                                      borderRadius: '6px',
+                                      fontSize: '0.85rem',
+                                      width: '100%',
+                                      outline: 'none'
+                                    }}
+                                  >
+                                    <option value="">All Tracks (No Filter)</option>
+                                    {allCourses.map(c => (
+                                      <option key={c.id} value={c.id}>{c.name}</option>
+                                    ))}
+                                  </select>
+                                ) : (
+                                  <span style={{ fontSize: '0.82rem', color: '#64748b' }}>Admin (Global access)</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -39,7 +39,8 @@ export default function Login() {
           email: result.session.email,
           name: result.session.fullName,
           role: result.session.role,
-          course: result.session.courseName
+          course: result.session.courseName,
+          assignedCourseId: result.session.assignedCourseId
         }));
         document.cookie = `gisec_session_token=${result.session.id}; path=/; max-age=86400; SameSite=Lax`;
         window.location.href = '/dashboard';

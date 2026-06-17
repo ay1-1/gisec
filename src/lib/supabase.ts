@@ -21,6 +21,7 @@ export interface UserSession {
   courseId?: number;
   courseName?: string;
   enrolled?: boolean;
+  assignedCourseId?: number;
 }
 
 // Local storage helper functions
@@ -60,7 +61,7 @@ async function fetchSupabaseAuth(endpoint: string, body: any) {
 
 async function fetchSupabaseRest(
   table: string, 
-  method: 'GET' | 'POST' | 'PATCH', 
+  method: 'GET' | 'POST' | 'PATCH' | 'DELETE', 
   query: string = '', 
   body: any = null,
   headers: Record<string, string> = {}
@@ -247,7 +248,8 @@ export async function signInUser(
         role: userRecord.role,
         courseId,
         courseName,
-        enrolled
+        enrolled,
+        assignedCourseId: userRecord.assigned_course_id || undefined
       };
 
       // Set active session ID for concurrent login prevention
@@ -280,10 +282,11 @@ export async function signInUser(
         id: matchedUser.id || 'mock-id',
         email: matchedUser.email,
         fullName: matchedUser.fullName,
-        role: email.includes('admin') ? 'admin' : email.includes('tutor') ? 'tutor' : 'student',
+        role: matchedUser.role || (email.includes('admin') ? 'admin' : email.includes('tutor') ? 'tutor' : 'student'),
         courseId: matchedUser.courseId,
         courseName: matchedUser.courseName,
-        enrolled: isPaid
+        enrolled: isPaid,
+        assignedCourseId: matchedUser.assignedCourseId
       };
       
       const currentSessionId = crypto.randomUUID();
@@ -302,7 +305,8 @@ export async function signInUser(
           email,
           fullName: email.startsWith('admin') ? 'GISEC Administrator' : 'Lead Course Tutor',
           role: email.startsWith('admin') ? 'admin' : 'tutor',
-          enrolled: true
+          enrolled: true,
+          assignedCourseId: undefined
         };
         return { success: true, session };
       }
@@ -350,10 +354,10 @@ export async function getLiveClasses(email: string): Promise<any[]> {
 
       return await fetchSupabaseRest('live_classes', 'GET', `?cohort_id=eq.${cohortId}&order=schedule_time.asc`);
     } catch {
-      return getMockLiveClasses();
+      return getLocalStorageItem<any[]>('gisek_live_classes_mock', getMockLiveClasses());
     }
   } else {
-    return getMockLiveClasses();
+    return getLocalStorageItem<any[]>('gisek_live_classes_mock', getMockLiveClasses());
   }
 }
 
@@ -468,10 +472,14 @@ export async function submitProject(
 /**
  * Get all submissions (for Tutors/Admins)
  */
-export async function getAllSubmissions(): Promise<SubmissionData[]> {
+export async function getAllSubmissions(assignedCourseId?: number): Promise<SubmissionData[]> {
   if (isLiveDb()) {
     try {
-      const dbSubs = await fetchSupabaseRest('submissions', 'GET');
+      let query = '';
+      if (assignedCourseId !== undefined && assignedCourseId !== null) {
+        query = `?course_id=eq.${assignedCourseId}`;
+      }
+      const dbSubs = await fetchSupabaseRest('submissions', 'GET', query);
       const mapped: SubmissionData[] = [];
       for (const s of dbSubs) {
         const uRes = await fetchSupabaseRest('users', 'GET', `?id=eq.${s.user_id}&limit=1`);
@@ -491,14 +499,14 @@ export async function getAllSubmissions(): Promise<SubmissionData[]> {
       }
       return mapped;
     } catch {
-      return getMockSubmissions();
+      return getMockSubmissions(assignedCourseId);
     }
   } else {
-    return getMockSubmissions();
+    return getMockSubmissions(assignedCourseId);
   }
 }
 
-function getMockSubmissions(): SubmissionData[] {
+function getMockSubmissions(assignedCourseId?: number): SubmissionData[] {
   if (typeof window !== 'undefined') {
     const allMock: SubmissionData[] = [];
     const keys = Object.keys(localStorage);
@@ -507,6 +515,12 @@ function getMockSubmissions(): SubmissionData[] {
       const parts = key.split('_');
       const userId = parts[1];
       const courseId = parseInt(parts[2]);
+      
+      // Filter by assigned course id if tutor is restricted
+      if (assignedCourseId !== undefined && assignedCourseId !== null && courseId !== assignedCourseId) {
+        continue;
+      }
+      
       const subs = JSON.parse(localStorage.getItem(key) || '[]') as SubmissionData[];
       
       const students = JSON.parse(localStorage.getItem('gisek_students') || '[]') as any[];
@@ -522,7 +536,8 @@ function getMockSubmissions(): SubmissionData[] {
     }
     if (allMock.length > 0) return allMock;
   }
-  return [
+  
+  const defaultSubs = [
     {
       id: 1,
       userId: 'student-1',
@@ -534,6 +549,10 @@ function getMockSubmissions(): SubmissionData[] {
       studentName: 'Blessing Obi'
     }
   ];
+  if (assignedCourseId !== undefined && assignedCourseId !== null) {
+    return defaultSubs.filter(s => s.courseId === assignedCourseId);
+  }
+  return defaultSubs;
 }
 
 /**
@@ -1060,5 +1079,280 @@ export async function updateCourseDetails(
       return { success: true };
     }
     return { success: false, error: 'Course not found in mock storage.' };
+  }
+}
+
+// ==============================================================================
+// LEARNING MANAGEMENT & RESOURCE LIBRARY FUNCTIONS
+// ==============================================================================
+
+export interface AdminTutorData {
+  id: string;
+  fullName: string;
+  email: string;
+  role: 'tutor' | 'admin';
+  assignedCourseId?: number;
+  assignedCourseName?: string;
+}
+
+export async function scheduleLiveClass(
+  cohortId: number,
+  topic: string,
+  scheduleTime: string,
+  meetingLink: string
+): Promise<{ success: boolean; error?: string }> {
+  if (isLiveDb()) {
+    try {
+      await fetchSupabaseRest('live_classes', 'POST', '', {
+        cohort_id: cohortId,
+        topic,
+        schedule_time: scheduleTime,
+        meeting_link: meetingLink
+      });
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  } else {
+    const list = getLocalStorageItem<any[]>('gisek_live_classes_mock', getMockLiveClasses());
+    const newId = list.length > 0 ? Math.max(...list.map(l => l.id)) + 1 : 1;
+    list.push({
+      id: newId,
+      cohort_id: cohortId,
+      topic,
+      schedule_time: scheduleTime,
+      meeting_link: meetingLink,
+      recording_link: null
+    });
+    setLocalStorageItem('gisek_live_classes_mock', list);
+    return { success: true };
+  }
+}
+
+export async function publishClassRecording(
+  classId: number,
+  recordingLink: string
+): Promise<{ success: boolean; error?: string }> {
+  if (isLiveDb()) {
+    try {
+      await fetchSupabaseRest('live_classes', 'PATCH', `?id=eq.${classId}`, {
+        recording_link: recordingLink
+      });
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  } else {
+    const list = getLocalStorageItem<any[]>('gisek_live_classes_mock', getMockLiveClasses());
+    const idx = list.findIndex(l => l.id === classId);
+    if (idx >= 0) {
+      list[idx].recording_link = recordingLink;
+      setLocalStorageItem('gisek_live_classes_mock', list);
+      return { success: true };
+    }
+    return { success: false, error: 'Live class not found' };
+  }
+}
+
+function getMockResources() {
+  return [
+    {
+      id: 1,
+      course_id: 1,
+      title: 'Git & GitHub Cheat Sheet',
+      description: 'Essential Git commands for team collaboration.',
+      url: 'https://education.github.com/git-cheat-sheet-education.pdf',
+      category: 'Reference',
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 2,
+      course_id: 1,
+      title: 'HNG Stage 1 Project Template',
+      description: 'Boilerplate template for HNG stage 1 task.',
+      url: 'https://github.com/hng/stage1-template',
+      category: 'Template',
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 3,
+      course_id: 2,
+      title: 'SQL Query Optimization Guide',
+      description: 'Performance tuning and indexing strategies.',
+      url: 'https://use-the-index-luke.com/',
+      category: 'Slides',
+      created_at: new Date().toISOString()
+    }
+  ];
+}
+
+export async function addLearningResource(
+  courseId: number,
+  title: string,
+  description: string,
+  url: string,
+  category: string
+): Promise<{ success: boolean; error?: string }> {
+  if (isLiveDb()) {
+    try {
+      await fetchSupabaseRest('resources', 'POST', '', {
+        course_id: courseId,
+        title,
+        description,
+        url,
+        category,
+        created_at: new Date().toISOString()
+      });
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  } else {
+    const list = getLocalStorageItem<any[]>('gisek_resources_mock', getMockResources());
+    const newId = list.length > 0 ? Math.max(...list.map(l => l.id)) + 1 : 1;
+    list.push({
+      id: newId,
+      course_id: courseId,
+      title,
+      description,
+      url,
+      category,
+      created_at: new Date().toISOString()
+    });
+    setLocalStorageItem('gisek_resources_mock', list);
+    return { success: true };
+  }
+}
+
+export async function getLearningResources(courseId: number): Promise<any[]> {
+  if (isLiveDb()) {
+    try {
+      return await fetchSupabaseRest('resources', 'GET', `?course_id=eq.${courseId}&order=created_at.desc`);
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  } else {
+    const list = getLocalStorageItem<any[]>('gisek_resources_mock', getMockResources());
+    return list.filter(l => l.course_id === courseId);
+  }
+}
+
+export async function deleteLearningResource(resourceId: number): Promise<{ success: boolean; error?: string }> {
+  if (isLiveDb()) {
+    try {
+      await fetchSupabaseRest('resources', 'DELETE', `?id=eq.${resourceId}`);
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  } else {
+    const list = getLocalStorageItem<any[]>('gisek_resources_mock', getMockResources());
+    const filtered = list.filter(l => l.id !== resourceId);
+    setLocalStorageItem('gisek_resources_mock', filtered);
+    return { success: true };
+  }
+}
+
+export async function getAdminTutors(): Promise<AdminTutorData[]> {
+  if (isLiveDb()) {
+    try {
+      const users = await fetchSupabaseRest('users', 'GET');
+      const courses = await fetchSupabaseRest('courses', 'GET');
+      
+      return users
+        .filter((u: any) => u.role === 'tutor' || u.role === 'admin')
+        .map((u: any) => {
+          const course = courses.find((cr: any) => cr.id === u.assigned_course_id);
+          return {
+            id: u.id,
+            fullName: u.full_name,
+            email: u.email,
+            role: u.role,
+            assignedCourseId: u.assigned_course_id || undefined,
+            assignedCourseName: course ? course.name : 'All Tracks'
+          };
+        });
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  } else {
+    const students = getLocalStorageItem<any[]>('gisek_students', []);
+    const defaults = [
+      { id: 'mock-tutor-default-id', fullName: 'Lead Course Tutor', email: 'tutor@gisec.africa', role: 'tutor', assignedCourseId: undefined },
+      { id: 'mock-admin-default-id', fullName: 'GISEC Administrator', email: 'admin@gisec.africa', role: 'admin', assignedCourseId: undefined }
+    ];
+    
+    const tutorsList = [...students.filter(s => s.role === 'tutor' || s.role === 'admin')];
+    
+    for (const def of defaults) {
+      if (!tutorsList.some(t => t.email === def.email) && !students.some(s => s.email === def.email)) {
+        tutorsList.push(def);
+      }
+    }
+    
+    const courses = [
+      { id: 1, name: 'Software Engineering' },
+      { id: 2, name: 'Data Analytics' },
+      { id: 3, name: 'Cybersecurity' },
+      { id: 4, name: 'UI/UX Design' },
+      { id: 5, name: 'Product Management' },
+      { id: 6, name: 'Digital Marketing' }
+    ];
+    
+    return tutorsList.map(t => {
+      const course = courses.find(c => c.id === t.assignedCourseId);
+      return {
+        id: t.id,
+        fullName: t.fullName,
+        email: t.email,
+        role: t.role,
+        assignedCourseId: t.assignedCourseId,
+        assignedCourseName: course ? course.name : 'All Tracks'
+      };
+    });
+  }
+}
+
+export async function assignTutorToCourse(
+  tutorId: string,
+  courseId: number | null
+): Promise<{ success: boolean; error?: string }> {
+  if (isLiveDb()) {
+    try {
+      await fetchSupabaseRest('users', 'PATCH', `?id=eq.${tutorId}`, {
+        assigned_course_id: courseId
+      });
+      return { success: true };
+    } catch (err: any) {
+      console.error(err);
+      return { success: false, error: err.message || 'Failed to assign course' };
+    }
+  } else {
+    const students = getLocalStorageItem<any[]>('gisek_students', []);
+    const idx = students.findIndex(s => s.id === tutorId);
+    if (idx >= 0) {
+      students[idx].assignedCourseId = courseId || undefined;
+      setLocalStorageItem('gisek_students', students);
+      return { success: true };
+    } else {
+      const defaults = [
+        { id: 'mock-tutor-default-id', fullName: 'Lead Course Tutor', email: 'tutor@gisec.africa', role: 'tutor' },
+        { id: 'mock-admin-default-id', fullName: 'GISEC Administrator', email: 'admin@gisec.africa', role: 'admin' }
+      ];
+      const matched = defaults.find(d => d.id === tutorId);
+      if (matched) {
+        students.push({
+          ...matched,
+          assignedCourseId: courseId || undefined,
+          status: 'active',
+          enrolledAt: new Date().toISOString()
+        });
+        setLocalStorageItem('gisek_students', students);
+        return { success: true };
+      }
+    }
+    return { success: false, error: 'Tutor account not found' };
   }
 }
